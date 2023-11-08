@@ -3,6 +3,7 @@
 ## Course
 
 * topic 1
+* topic 2
 * topic ...
 * topic N
 
