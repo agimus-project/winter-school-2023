@@ -2,9 +2,9 @@
 
 ## Course
 
-* topic 1
-* topic ...
-* topic N
+* 45 min - Collision detection (broad and narrow phase)
+* 1h TP - HPP-FCL
+* 45 min - Differentiable collision detection
 
 ## Tutorial
 
