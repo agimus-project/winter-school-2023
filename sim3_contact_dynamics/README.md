@@ -1,8 +1,6 @@
 # Solving the contact dynamics
 
-## Requirements
 
-hppfcl, pinocchio3x, tqdm
 
 ## Course
 
@@ -13,3 +11,7 @@ hppfcl, pinocchio3x, tqdm
 ## Tutorial
 
 * tp_sim3.py : contact simulation
+
+### Requirements
+
+hppfcl, meshcat, pinocchio3x, tqdm
