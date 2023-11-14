@@ -1,12 +1,15 @@
 # Solving the contact dynamics
 
+## Requirements
+
+hppfcl, pinocchio3x, tqdm
+
 ## Course
 
-* topic 1
-* topic 2
-* topic ...
-* topic N
+* Introduction to the main concepts of contact simulation
+* Numerics of simulation
+* Robotics simulators
 
 ## Tutorial
 
-[prepare relevant files in this directory: notebooks? Python scripts?]
+* tp_sim3.py : contact simulation
