@@ -4,6 +4,9 @@ from hppfcl import Sphere, Halfspace, Box
 from tqdm import trange
 
 def computeContactJacobians(model, data, geom_model, geom_data):
+    """Computes the contact Jacobian, the Delassus matrix and 
+    collect the associated coefficients of friction.
+    """
     nc = 0
     J, Del, R, err = None, None, None, None
     mus = []
@@ -29,15 +32,6 @@ def computeContactJacobians(model, data, geom_model, geom_data):
             for contact in contacts:
                 pos_i = contact.pos
                 normal_i = contact.normal
-                # if i in prev_contacts.keys():
-                #     # prev_R = prev_contacts[i][1]
-                #     prev_R = prev_Rs[i]
-                #     warm_start = True
-                # else:
-                #     warm_start=False
-                # if warm_start and np.allclose(normal_i,prev_R[:,2]):
-                #     R_i = prev_R
-                # else:
                 ex_i, ey_i = complete_orthonormal_basis(contact.normal, joint_placement_1)
                 ex_i = np.expand_dims(ex_i, axis=1)
                 ey_i = np.expand_dims(ey_i, axis=1)
@@ -82,6 +76,9 @@ def computeContactJacobians(model, data, geom_model, geom_data):
     return J, Del, data.M, R, err, mus, els, contact_points
 
 def complete_orthonormal_basis(ez, joint_placement):
+    """When a normal is provided, this function 
+    returns two tangent vectors to form an orthonormal 3D basis.
+    """
     ex = joint_placement.rotation[:,0]
     if np.abs(np.dot(ex,ez))>0.999:
         ex = joint_placement.rotation[:,1]
@@ -92,6 +89,18 @@ def complete_orthonormal_basis(ez, joint_placement):
 
 
 def create_cubes(length=[0.2], mass=[1.0], mu=0.9, el=0.1):
+    """Creates the pinocchio model, geommodel and visualmodel 
+    of a scene containing cubes and a floor.
+
+    Args:
+        length (list, optional): a list containing the lengthes of the cubes. Defaults to [0.2].
+        mass (list, optional): a list containing the masses of the cubes. Defaults to [1.0].
+        mu (float, optional): a llist containing the coefficient of friction used for every contact. Defaults to 0.9.
+        el (float, optional): a list containing the elasticity used for every contact. Defaults to 0.1.
+
+    Returns:
+        model, geommodel, visualmodel, data, geomdata, visualdata, actuation
+    """
     assert len(length) == len(mass) or len(length) == 1 or len(mass) == 1
     N = max(len(length), len(mass))
     if len(length) == 1:
@@ -291,7 +300,19 @@ def create_cubes(length=[0.2], mass=[1.0], mu=0.9, el=0.1):
     )
 
 def solve_contact(G: np.ndarray,g: np.ndarray, mus: list, tol : float = 1e-6, max_iter :int = 100) -> np.ndarray:
-    # TODO
+    """PGS algorithm solving a contact problem with frictions.
+
+    Args:
+        G (np.ndarray): Delassus matrix.
+        g (np.ndarray): free velocity of contact points.
+        mus (list): list of coefficients of friction for the contact points.
+        tol (float, optional): solver tolerance. Defaults to 1e-6.
+        max_iter (int, optional): maximum number of iterations for the solver. Defaults to 100.
+
+    Returns:
+        np.ndarray: contact impulses.
+    """
+    # TODO : PGS
     nc = len(mus)
     lam = np.zeros(3*nc)
     for j in range(max_iter):
@@ -321,11 +342,9 @@ duration = 1.
 dt = 1e-3
 T = int(duration/dt)
 
-# Physical parameters of the contact problem
-Kb = 1e-4  # Baumgarte
-
 # numerical precision
 th = 1e-6
+max_iter = 100
 
 # initial state
 q0 = model.qinit
@@ -347,7 +366,7 @@ for t in trange(T):
     J, Del, _, _, _, mus, _, _ = computeContactJacobians(model, data, geom_model, geom_data)
     if J is not None:
         g = J @ vf
-        lam = solve_contact(Del, g, mus, th)
+        lam = solve_contact(Del, g, mus, th, max_iter)
         dv = dt*pin.aba(model, data, q, v, tau + J.T @ lam/dt)
         v += dv
     else:
