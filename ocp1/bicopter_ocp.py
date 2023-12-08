@@ -1,6 +1,6 @@
 import numpy as np
 import crocoddyl
-from bicopter_utils import plotBicopter, plotBicopterSolution,ViewerBicopter
+from utils.bicopter import plotBicopter, plotBicopterSolution,ViewerBicopter
 import matplotlib.pyplot as plt                                                                                                  
 class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract):
 
@@ -108,17 +108,14 @@ ddp = crocoddyl.SolverDDP(problem)
 ddp.setCallbacks([crocoddyl.CallbackVerbose()])
 ddp.solve([], [], 300)
 
-# Display animation
-#plotBicopterSolution(list(ddp.xs)[::3],show='interactive')
-import matplotlib.pyplot as plt
-plt.ion()
-
-f,pltAx = plt.subplots(1,1, figsize=(6.4, 6.4))
-f,pltAx = plt.subplots(1,1, figsize=(6.4, 6.4))
-#fig,ax = plt.subplots(1,1, figsize=(6.4, 6.4))
+# Display trajectory
+fig,ax = plt.subplots(2,1, figsize=(6.4, 6.4))
 xs = np.array(ddp.xs)
 us = np.array(ddp.us)
-#ax.plot(xs[:,:3])
+ax[0].plot(xs[:,:3])
+ax[1].plot(us)
 
-#viz = ViewerBicopter()
-#viz.displayTrajectory(xs,timeStep)
+plotBicopterSolution(list(ddp.xs)[::3],show=True)
+
+viz = ViewerBicopter()
+viz.displayTrajectory(xs,timeStep)
