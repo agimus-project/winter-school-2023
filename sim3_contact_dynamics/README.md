@@ -2,7 +2,7 @@
 
 This introductory lecture follows these two following reference papers:
   - Carpentier, J., Budhiraja, R., & Mansard, N. (2021, July). [https://inria.hal.science/hal-03271811/file/rss-proximal-and-sparse.pdf](Proximal and sparse resolution of constrained dynamic equations). In Robotics: Science and Systems 2021.
-  - Lidec, Q. L., Jallet, W., Montaut, L., Laptev, I., Schmid, C., & Carpentier, J. (2023). [https://hal.science/hal-04067291v1/preview/lelidec2023contacts.pdf](Contact Models in Robotics: a Comparative Analysis). 
+  - Le Lidec, Q., Jallet, W., Montaut, L., Laptev, I., Schmid, C., & Carpentier, J. (2023). [https://hal.science/hal-04067291v1/preview/lelidec2023contacts.pdf](Contact Models in Robotics: a Comparative Analysis). 
 
 ## Content
 
