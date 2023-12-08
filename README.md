@@ -19,7 +19,7 @@ conda activate aws
 conda install -c agm-ws-2023 my_package_name
 ```
 The two first lines create a new environment named `aws` and then activate it.
-The third line installs `my_package_name`using the channel where the packages have been compiled.
+The third line installs `my_package_name`using the [channel](https://anaconda.org/agm-ws-2023) of the AGIMUS winter school where the packages have been compiled.
 
 You can also consider installing additional tools via pip, like:
 ```bash
