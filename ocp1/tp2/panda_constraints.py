@@ -15,6 +15,7 @@ import numpy as np
 import example_robot_data as robex
 import matplotlib.pylab as plt
 import time
+import mim_solvers
 
 # %jupyter_snippet robexload
 # First, let's load the Pinocchio model for the Panda arm.
@@ -32,7 +33,9 @@ TIME_STEP = 1e-2
 FRAME_TIP = robot.model.getFrameId("panda_hand_tcp")
 GOAL_POSITION = np.array([.2,0.5,.5])
 GOAL_PLACEMENT = pin.SE3(pin.utils.rpyToMatrix(-np.pi,0,np.pi/4), GOAL_POSITION)
-REACH_DIMENSION = "3d" # "6d"
+GOAL_POSITION = np.array([.3,0.6,.60])
+GOAL_PLACEMENT = pin.SE3(pin.utils.rpyToMatrix(-np.pi,-1.5,1.5), GOAL_POSITION)
+REACH_DIMENSION = "6d" # "3d"
 # %end_jupyter_snippet
 
 # Configure viewer to vizualize the robot and a green box to feature the goal placement.
@@ -78,7 +81,7 @@ elif REACH_DIMENSION == "6d":
     goal6TrackingRes = crocoddyl.ResidualModelFramePlacement(state,FRAME_TIP,GOAL_PLACEMENT)
     goal6TrackingCost = crocoddyl.CostModelResidual(state,goal6TrackingRes)
     runningCostModel.addCost("gripperPose", goal6TrackingCost, .001)
-    terminalCostModel.addCost("gripperPose", goal6TrackingCost, 1)
+    terminalCostModel.addCost("gripperPose", goal6TrackingCost, 4)
 else:
     assert( REACH_DIMENSION=="3d" or REACH_DIMENSION=="6d" )
 # %end_jupyter_snippet
@@ -91,22 +94,54 @@ else:
 xRegWeights = crocoddyl.ActivationModelWeightedQuad(np.array([1,1,1,1,1,1,1, .1,.1,.1,.1,.1,.1,.1]))
 xRegRes = crocoddyl.ResidualModelState(state,robot_model.x0)
 xRegCost = crocoddyl.CostModelResidual(state,xRegWeights,xRegRes)
-runningCostModel.addCost("xReg", xRegCost, 1e-3)
+runningCostModel.addCost("xReg", xRegCost, 1e-2)
 
 # Terminal cost for state regularization || x - x* ||**2
 # Require more strictly a small velocity at task end (but we don't car for the position)
 xRegWeightsT=crocoddyl.ActivationModelWeightedQuad(np.array([.5,.5,.5,.5,.5,.5,.5,  5.,5.,5.,5.,5.,5.,5.]))
 xRegResT = crocoddyl.ResidualModelState(state,robot_model.x0)
 xRegCostT = crocoddyl.CostModelResidual(state,xRegWeightsT,xRegResT)
-terminalCostModel.addCost("xReg", xRegCostT, .01)
+terminalCostModel.addCost("xReg", xRegCostT, .1)
 # %end_jupyter_snippet
 
 # %jupyter_snippet cost_ureg
 # Cost for control regularization || u - g(q) ||**2
 uRegRes = crocoddyl.ResidualModelControlGrav(state)
 uRegCost = crocoddyl.CostModelResidual(state,uRegRes)
-runningCostModel.addCost("uReg", uRegCost, 1e-6)
+runningCostModel.addCost("uReg", uRegCost, 1e-5)
 # %end_jupyter_snippet
+
+
+
+
+
+# Define contraint
+# Create contraint on end-effector
+frameTranslationResidual = crocoddyl.ResidualModelFrameTranslation(
+    state, FRAME_TIP, np.zeros(3)
+)
+x_bound = 0.23
+z_bound = 0.6
+ee_contraint = crocoddyl.ConstraintModelResidual(
+    state,
+    frameTranslationResidual,
+    np.array([-np.inf, -np.inf, -np.inf]),
+    np.array([np.inf, np.inf, z_bound]),
+)
+
+jointLimitResiduals = crocoddyl.ResidualModelState(state,np.zeros(state.nx))
+xLow = np.concatenate( [ robot_model.lowerPositionLimit , -np.ones(robot_model.nv)*np.inf ] )
+xUp = np.concatenate( [ robot_model.upperPositionLimit , np.ones(robot_model.nv)*np.inf ] )
+jointLimitContraints = crocoddyl.ConstraintModelResidual(
+    state, jointLimitResiduals, xLow, xUp )
+
+runningConstraints = crocoddyl.ConstraintModelManager(state, robot.nv)
+
+runningConstraints.addConstraint("virtual_wall", ee_contraint)
+runningConstraints.addConstraint("joint_limits", jointLimitContraints)
+
+
+
 
 # %jupyter_snippet iam
 # Next, we need to create the running and terminal action model.
@@ -117,7 +152,15 @@ runningCostModel.addCost("uReg", uRegCost, 1e-6)
 actuationModel = crocoddyl.ActuationModelFull(state)
 # Running model composing the costs, the differential equations of motion and the integrator.
 runningModel = crocoddyl.IntegratedActionModelEuler(
-    crocoddyl.DifferentialActionModelFreeFwdDynamics(state, actuationModel, runningCostModel), TIME_STEP)
+    crocoddyl.DifferentialActionModelFreeFwdDynamics(
+        state, actuationModel, runningCostModel, runningConstraints),
+    TIME_STEP)
+runningModel.differential.armature = robot_model.armature
+# Specific unconstrained initial model
+runningModel_init = crocoddyl.IntegratedActionModelEuler(
+    crocoddyl.DifferentialActionModelFreeFwdDynamics(
+        state, actuationModel, runningCostModel),
+    TIME_STEP)
 runningModel.differential.armature = robot_model.armature
 # Terminal model following the same logic, although the integration is here trivial.
 terminalModel = crocoddyl.IntegratedActionModelEuler(
@@ -129,39 +172,43 @@ terminalModel.differential.armature = robot_model.armature
 # For this optimal control problem, we define HORIZON_LENGTH knots (or running action
 # models) plus a terminal knot
 # %jupyter_snippet shoot
-problem = crocoddyl.ShootingProblem(robot_model.x0, [runningModel] * HORIZON_LENGTH, terminalModel)
+problem = crocoddyl.ShootingProblem(robot_model.x0,
+                                    [runningModel_init] + [runningModel] * (HORIZON_LENGTH - 1),
+                                    terminalModel)
 # %end_jupyter_snippet
+SQP_SOLVE = True
 
-# Solving it using DDP
-# Create the DDP solver for this OC problem, verbose traces, with a logger
-ddp = crocoddyl.SolverDDP(problem)
-# %jupyter_snippet callbacks
-ddp.setCallbacks([
-    crocoddyl.CallbackLogger(),
-    crocoddyl.CallbackVerbose(),
-])
-# %end_jupyter_snippet
+if SQP_SOLVE:
+    solver = mim_solvers.SolverCSQP(problem)
+    solver.with_callbacks = True 
+    solver.termination_tolerance = 1e-4         # Termination criteria (KKT residual)
+    solver.max_qp_iters = 10000                 # Maximum number of QP iteration
+    solver.eps_abs = 1e-5                       # QP termination absolute criteria
+    solver.eps_rel = 0.                         # QP termination absolute criteria
+
+else:
+
+    solver = crocoddyl.SolverDDP(problem)
+    solver.setCallbacks(
+        [
+            crocoddyl.CallbackLogger(),
+            crocoddyl.CallbackVerbose(),
+        ]
+    )
+    
 
 # Solving it with the DDP algorithm
-ddp.solve([],[],1000)  # xs_init,us_init,maxiter
+solver.solve([],[],1000)  # xs_init,us_init,maxiter
 #assert( ddp.stop == 1.9384159634520916e-10 )
 
-# Plotting the solution and the DDP convergence
-log = ddp.getCallbacks()[0]
-crocoddyl.plotOCSolution(log.xs, log.us, figIndex=1, show=False)
-crocoddyl.plotConvergence(
-    log.costs,
-    log.pregs,
-    log.dregs,
-    log.grads,
-    log.stops,
-    log.steps,
-    figIndex=2,
-    show=False,
-)
-print('Type plt.show() to display the plots')
+
+oMfs = [ d.differential.pinocchio.oMf[FRAME_TIP].translation for d in solver.problem.runningDatas ]
+plt.ion()
+plt.plot(oMfs)
+#plt.plot([0,HORIZON_LENGTH],[z_bound,z_bound],'g--')
+plt.legend(['x', 'y', 'z'])
 
 # # Visualizing the solution in gepetto-viewer
-for x in ddp.xs:
+for x in solver.xs:
     viz.display(x[:robot.model.nq])
     time.sleep(TIME_STEP)
