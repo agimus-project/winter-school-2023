@@ -4,7 +4,13 @@ The perception course will cover two main areas: (i) object 6D pose estimation f
 The former is based on [HappyPose](https://github.com/agimus-project/happypose), our open source reimplementation of state-of-the-art object pose estimation methods called CosyPose and MegaPose.
 The latter is based on DLR Tracker... **Mederic: TBD**
 
-To make code easily replicable on laptops, we will install CPU version only. The CPU version is however slow, see [HappyPose](https://github.com/agimus-project/happypose) for installation of GPU version for you future projects.
+The course is based on following publications:
+
+- Fourmy, M., Priban, V., Behrens, J. K., Mansard, N., Sivic, J., & Petrik, V. (2023). **Visually Guided Model Predictive Robot Control via 6D Object Pose Localization and Tracking**. In review for ICRA 2023. [ArXiv](https://arxiv.org/pdf/2311.05344), [project page](https://data.ciirc.cvut.cz/public/projects/2023VisualMPC/).
+- Labbé, Y., Manuelli, L., Mousavian, A., Tyree, S., Birchfield, S., Tremblay, J., Carpentier, J., Aubry, M., Fox, D. and Sivic, J., (2022). **Megapose: 6d pose estimation of novel objects via render & compare**. [ArXiv](https://arxiv.org/abs/2212.06870), [project page](https://megapose6d.github.io/).
+- Labbé, Y., Carpentier, J., Aubry, M., & Sivic, J. (2020). **Cosypose: Consistent multi-view multi-object 6d pose estimation**. In ECCV 2020. [ArXiv](https://arxiv.org/abs/2008.08465), [project page](https://www.di.ens.fr/willow/research/cosypose/).
+
+
 
 ## Outline
 
@@ -19,6 +25,8 @@ To make code easily replicable on laptops, we will install CPU version only. The
   - Object pose estimation and tracking pipeline
 
 ## Installation
+
+To make code easily replicable on laptops, we will install CPU version only. The CPU version is however slow, see [HappyPose](https://github.com/agimus-project/happypose) for installation of GPU version for you future projects.
 
 ```bash
 # Create Conda environment
