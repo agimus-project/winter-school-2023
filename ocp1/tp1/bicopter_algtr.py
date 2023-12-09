@@ -1,0 +1,113 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import proxddp
+from proxddp import dynamics, manifolds
+from utils.bicopter import plotBicopterSolution, ViewerBicopter
+
+# %jupyter_snippet hyperparams
+### Horizon and initial state
+timeStep = 0.01
+x0 = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+T = 50
+mass = 1.0
+span = 0.2
+grav = 10.0
+costWeights = np.array([
+    0.1, # x
+    0.1, # z
+    .10, # s
+    .10, # c
+    0.001, # vx
+    0.001, # vz
+    0.001, # w
+    0.0, # fr
+    0.0, # fl
+    0.001,0.001,0.001, # a
+])  # sin, 1-cos, x, xdot, thdot, f
+# %end_jupyter_snippet
+
+# %jupyter_snippet model_classes
+nu = 2
+space = manifolds.VectorSpace(6)  # state space
+
+
+def bicopter_xdot_impl(x, u, span, mass, g):
+    inertia = mass * span**2
+    x1, x2, th, v1, v2, w = x
+    fr, fl = u
+    s, c = np.sin(th), np.cos(th)
+    loc_f = np.array([0, fr + fl, (fl - fr) * span])
+    return np.array([-loc_f[1] * s / mass, loc_f[1] * c / mass - g, loc_f[2] / inertia])
+
+
+class BicopterStateError(proxddp.StageFunction):
+    def __init__(self):
+        super().__init__(6, nu, nr=12)
+
+    def evaluate(self, x, u, y, data: proxddp.StageFunctionData):
+        x1, x2, th, v1, v2, w = x
+        fr, fl = u
+        s, c = np.sin(th), np.cos(th)
+        xdot = bicopter_xdot_impl(x, u, span, mass, grav)
+        r = np.array([x1, x2, s, 1 - c, v1, v2, w, fr, fl, *xdot])
+        data.value[:] = r
+
+
+class BicopterODE(dynamics.ODEAbstract):
+    def __init__(self):
+        super().__init__(space, nu)
+        self.unone = np.zeros(nu)
+        self.inertia = mass * span**2
+
+    def forward(self, x, u, data: dynamics.ODEData):
+        x1, x2, th, v1, v2, w = x
+        fr, fl = u
+        data.xdot[:3] = v1, v2, w
+        data.xdot[3:] = bicopter_xdot_impl(x, u, span, mass, grav)
+
+
+# %end_jupyter_snippet
+
+# %jupyter_snippet define_models
+fd_eps = 1e-4
+ode = BicopterODE()
+dyn_model_ = dynamics.IntegratorSemiImplEuler(ode, timeStep)  # has no derivatives
+dyn_model = proxddp.DynamicsFiniteDifferenceHelper(space, dyn_model_, fd_eps)
+state_err_ = BicopterStateError()
+state_err = proxddp.FiniteDifferenceHelper(space, state_err_, fd_eps)
+# define a quadratic cost from the bicopter state error
+rcost = proxddp.QuadraticResidualCost(space, state_err, np.diag(costWeights ** 2 * timeStep))
+term_cost = proxddp.QuadraticResidualCost(space, state_err, np.diag(costWeights ** 2))
+_w = np.diagonal(term_cost.weights)
+_w.setflags(write=True)
+_w[:] = 1e4
+
+# %end_jupyter_snippet
+
+
+# %jupyter_snippet ocp
+stage = proxddp.StageModel(rcost, dyn_model)
+stages_ = [stage] * T
+problem = proxddp.TrajOptProblem(x0, stages_, term_cost)
+
+TOL = 1e-5
+verbosity = proxddp.VERBOSE
+solver = proxddp.SolverProxDDP(TOL, max_iters=300, verbose=verbosity)
+solver.setup(problem)  # allocate data for this problem
+ok = solver.run(problem, [], [])
+
+rs: proxddp.Results = solver.results
+print(rs)
+xs_opt = rs.xs.tolist()
+# %end_jupyter_snippet
+
+# %jupyter_snippet plot
+plotBicopterSolution(xs_opt)
+
+print('Type plt.show() to display the result.')
+# %end_jupyter_snippet
+
+# %jupyter_snippet viz
+viz = ViewerBicopter()
+viz.displayTrajectory(xs_opt, timeStep)
+# %end_jupyter_snippet
