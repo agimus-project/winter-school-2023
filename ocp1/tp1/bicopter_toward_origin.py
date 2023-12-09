@@ -18,7 +18,7 @@ T = 50
 # (with q=(x1,x2,theta), x1 the horizontal position, x2 the vertical position and
 # theta the angle)
 # (with v=(v1,v2,w) the horizontal, vertical and angle velocities)
-# The control is the thrust (vertical forces) of right then leg propelers
+# The control is the thrust (vertical forces) of right then leg propellers
 # (u=(f_right, f_left))
 # The calc function compute the system acceleration data.xout and cost residuals
 # data.residuals, along with the cost in data.cost=.5*sum(data.residuals**2).
@@ -166,9 +166,9 @@ crocoddyl.plotConvergence(
 )
 
 plotBicopterSolution(list(ddp.xs)[::3])
+# %end_jupyter_snippet
 
 print('Type plt.show() to display the result.')
-# %end_jupyter_snippet
 
 # %jupyter_snippet viz
 # Animate the solution in meshcat

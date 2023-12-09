@@ -72,7 +72,6 @@ if REACH_DIMENSION == "3d":
     goalTrackingCost = crocoddyl.CostModelResidual(state,goalTrackingRes)
     runningCostModel.addCost("gripperPose", goalTrackingCost, .001)
     terminalCostModel.addCost("gripperPose", goalTrackingCost, 1)
-    # %end_jupyter_snippet
 elif REACH_DIMENSION == "6d":
     # Cost for 6d tracking  || log( M(q)^-1 Mref ) ||**2
     goal6TrackingRes = crocoddyl.ResidualModelFramePlacement(state,FRAME_TIP,GOAL_PLACEMENT)
