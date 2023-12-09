@@ -42,7 +42,7 @@ def plotBicopterSolution(xs, pltAx=None,show=False):
     pltAx.set_title('Bicopter trajectory')
     pltAx.set_xlabel('horizontal x1 (m)')
     pltAx.set_ylabel('verical x2 (m)')
-    if show==True:
+    if show:
         plt.show()
 
         
