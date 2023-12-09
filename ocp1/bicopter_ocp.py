@@ -1,7 +1,32 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import crocoddyl
+import unittest
 from utils.bicopter import plotBicopter, plotBicopterSolution,ViewerBicopter
-import matplotlib.pyplot as plt                                                                                                  
+
+# %jupyter_snippet hyperparams
+### HYPER PARAMS: horizon and initial state
+timeStep = 0.01
+x0 = np.array([1.0, 0.0, 0.0,  0.0, 0.0, 0.0])
+T = 50
+# %end_jupyter_snippet
+
+### MODEL DEFINITION
+
+# Definition of the differential action model for the bicopter
+# The state x=(q,v) is the concatenation of position and velocity of the copter
+# (with q=(x1,x2,theta), x1 the horizontal position, x2 the vertical position and
+# theta the angle)
+# (with v=(v1,v2,w) the horizontal, vertical and angle velocities)
+# The control is the thrust (vertical forces) of right then leg propelers
+# (u=(f_right, f_left))
+# The calc function compute the system acceleration data.xout and cost residuals
+# data.residuals, along with the cost in data.cost=.5*sum(data.residuals**2).
+# The calcDiff function should compute the acceleration derivatives dxout/dx,dxout/du
+# and cost derivatives dcost/dx,dcost/du (and corresponding hessians). Here we skip
+# the calcDiff and use finite differences to compute the Jacobians (of xout and r)
+# and approximate Hessian (with Gauss H=J'J).
+# %jupyter_snippet dam_header
 class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract):
 
     def __init__(self):
@@ -38,6 +63,7 @@ class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract)
         # Getting the state and control variables
         x1,x2,th,v1,v2,w = x
         fr,fl = u
+# %end_jupyter_snippet
 
         # Shortname for system parameters
         mass,span,g,inertia=self.mass,self.span,self.g,self.inertia
@@ -60,62 +86,92 @@ class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract)
                                               data.xout[0], data.xout[1], data.xout[2] ])
         data.cost = 0.5 * sum(data.r ** 2)
 
+# %jupyter_snippet dam_calcdiff_template
     def calcDiff(self, data, x, u=None):
-        # Advance user might implement the derivatives
+        # Advance user might implement the derivatives. Here
+        # we will rely on finite differences.
         pass
+# %end_jupyter_snippet
 
-
+# %jupyter_snippet dam
 # Creating the DAM for the bicopter
-bicopterModel = DifferentialActionModelBicopter()
-bicopterData = bicopterModel.createData()
-x = bicopterModel.state.rand()
+dam = DifferentialActionModelBicopter()
+# %end_jupyter_snippet
+
+# %jupyter_snippet dam_test
+# Create a local DAM data for testing the implementation
+dad = dam.createData()
+x = dam.state.rand()
 u = np.array([12,8])                    
-bicopterModel.calc(bicopterData,x,u)
+dam.calc(dad,x,u)
+# %end_jupyter_snippet
 
-# OCP
-# Hyperparameters
-timeStep = 0.01
-x0 = np.array([1.0, 0.0, 0.0,  0.0, 0.0, 0.0])
-T = 50
-
-bicopterDAM = model = DifferentialActionModelBicopter()
-
+# %jupyter_snippet dam_nd
 # Using NumDiff for computing the derivatives. We specify the
 # withGaussApprox=True to have approximation of the Hessian based on the
 # Jacobian of the cost residuals.
-bicopterND = crocoddyl.DifferentialActionModelNumDiff(bicopterDAM, True)
+damND = crocoddyl.DifferentialActionModelNumDiff(dam, True)
+# %end_jupyter_snippet
 
+# %jupyter_snippet iam
 # Getting the IAM using the simpletic Euler rule
-bicopterIAM = crocoddyl.IntegratedActionModelEuler(bicopterND, timeStep)
+iam = crocoddyl.IntegratedActionModelEuler(damND, timeStep)
+# %end_jupyter_snippet
 
-# Creating the shooting problem
+# %jupyter_snippet termmodel
+# Similarly creates a terminal model, but change the cost weights
+terminalDam = DifferentialActionModelBicopter()
+terminalDamND = crocoddyl.DifferentialActionModelNumDiff(terminalDam, True)
+terminalIam = crocoddyl.IntegratedActionModelEuler(terminalDamND)
 
-terminalBicopter = DifferentialActionModelBicopter()
-terminalBicopterDAM = crocoddyl.DifferentialActionModelNumDiff(terminalBicopter, True)
-terminalBicopterIAM = crocoddyl.IntegratedActionModelEuler(terminalBicopterDAM)
+terminalDam.costWeights[0] = 100 # horizontal position
+terminalDam.costWeights[1] = 100 # vertical position
+terminalDam.costWeights[2] = 100.0 # angle sin (first order)
+terminalDam.costWeights[3] = 100.0 # angle cos (second order)
+terminalDam.costWeights[4] = 100 # horizontal velocity
+terminalDam.costWeights[5] = 100 # vertical velocity
+terminalDam.costWeights[6] = 100 # angular velocity
+# %end_jupyter_snippet
 
-terminalBicopter.costWeights[0] = 100
-terminalBicopter.costWeights[1] = 100
-terminalBicopter.costWeights[2] = 100.0
-terminalBicopter.costWeights[3] = 100.0
-terminalBicopter.costWeights[4] = 100
-terminalBicopter.costWeights[5] = 100
-terminalBicopter.costWeights[6] = 100
-problem = crocoddyl.ShootingProblem(x0, [bicopterIAM] * T, terminalBicopterIAM)
+### PROBLEM DEFINITION
+
+# %jupyter_snippet ocp
+# Define the optimal control problem.
+problem = crocoddyl.ShootingProblem(x0, [iam] * T, terminalIam)
 
 # Solving it using DDP
 ddp = crocoddyl.SolverDDP(problem)
-ddp.setCallbacks([crocoddyl.CallbackVerbose()])
-ddp.solve([], [], 300)
+ddp.setCallbacks([crocoddyl.CallbackLogger(), crocoddyl.CallbackVerbose()])
 
-# Display trajectory
-fig,ax = plt.subplots(2,1, figsize=(6.4, 6.4))
-xs = np.array(ddp.xs)
-us = np.array(ddp.us)
-ax[0].plot(xs[:,:3])
-ax[1].plot(us)
+### SOLVE THE PROBLEM
 
-plotBicopterSolution(list(ddp.xs)[::3],show=True)
+done = ddp.solve([], [], 300)
+assert(done)
+# %end_jupyter_snippet
 
+### PLOT 
+
+# %jupyter_snippet plot
+log = ddp.getCallbacks()[0]
+crocoddyl.plotOCSolution(log.xs, log.us, figIndex=1, show=False)
+crocoddyl.plotConvergence(
+    log.costs,
+    log.pregs,
+    log.dregs,
+    log.grads,
+    log.stops,
+    log.steps,
+    figIndex=2,
+    show=False,
+)
+
+plotBicopterSolution(list(ddp.xs)[::3])
+
+print('Type plt.show() to display the result.')
+# %end_jupyter_snippet
+
+# %jupyter_snippet viz
+# Animate the solution in meshcat
 viz = ViewerBicopter()
-viz.displayTrajectory(xs,timeStep)
+viz.displayTrajectory(ddp.xs,timeStep)
+# %end_jupyter_snippet

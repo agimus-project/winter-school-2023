@@ -39,6 +39,9 @@ def plotBicopterSolution(xs, pltAx=None,show=False):
     for x in xs:
         plotBicopter(x,[],pltAx)
     pltAx.axis([-2, 2., -2., 2.])
+    pltAx.set_title('Bicopter trajectory')
+    pltAx.set_xlabel('horizontal x1 (m)')
+    pltAx.set_ylabel('verical x2 (m)')
     if show==True:
         plt.show()
 
