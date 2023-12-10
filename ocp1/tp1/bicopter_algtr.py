@@ -24,12 +24,11 @@ costWeights = np.array([
     0.0, # fl
     0.001,0.001,0.001, # a
 ])  # sin, 1-cos, x, xdot, thdot, f
-# %end_jupyter_snippet
-
-# %jupyter_snippet model_classes
 nu = 2
 space = manifolds.VectorSpace(6)  # state space
+# %end_jupyter_snippet
 
+# %jupyter_snippet state_error
 
 def bicopter_xdot_impl(x, u, span, mass, g):
     inertia = mass * span**2
@@ -51,8 +50,15 @@ class BicopterStateError(proxddp.StageFunction):
         xdot = bicopter_xdot_impl(x, u, span, mass, grav)
         r = np.array([x1, x2, s, 1 - c, v1, v2, w, fr, fl, *xdot])
         data.value[:] = r
+# %end_jupyter_snippet
 
+# %jupyter_snippet computeJacobians
+    def computeJacobians(self, x, u, y, data: dynamics.StageFunctionData):
+        # you can implement the derivatives of the error function here
+        pass
+# %end_jupyter_snippet
 
+# %jupyter_snippet ode
 class BicopterODE(dynamics.ODEAbstract):
     def __init__(self):
         super().__init__(space, nu)
@@ -64,20 +70,34 @@ class BicopterODE(dynamics.ODEAbstract):
         fr, fl = u
         data.xdot[:3] = v1, v2, w
         data.xdot[3:] = bicopter_xdot_impl(x, u, span, mass, grav)
-
-
 # %end_jupyter_snippet
 
-# %jupyter_snippet define_models
-fd_eps = 1e-4
+# %jupyter_snippet dForward
+    def dForward(self, x, u, data: dynamics.ODEData):
+        # you can implement the derivatives of th dynamics here
+        pass
+# %end_jupyter_snippet
+
+# %jupyter_snippet dynamics_and_residual
 ode = BicopterODE()
 dyn_model_ = dynamics.IntegratorSemiImplEuler(ode, timeStep)  # has no derivatives
-dyn_model = proxddp.DynamicsFiniteDifferenceHelper(space, dyn_model_, fd_eps)
 state_err_ = BicopterStateError()
-state_err = proxddp.FiniteDifferenceHelper(space, state_err_, fd_eps)
+# %end_jupyter_snippet
+
+# %jupyter_snippet finite_difference
+# Use the finite-difference helpers from proxddp
+# DynamicsFiniteDifferenceHelper, FiniteDifferenceHelper, CostFiniteDifferenceHelper 
+fd_eps = 1e-4
+dyn_model_nd = proxddp.DynamicsFiniteDifferenceHelper(space, dyn_model_, fd_eps)
+state_err_nd = proxddp.FiniteDifferenceHelper(space, state_err_, fd_eps)
 # define a quadratic cost from the bicopter state error
-rcost = proxddp.QuadraticResidualCost(space, state_err, np.diag(costWeights ** 2 * timeStep))
-term_cost = proxddp.QuadraticResidualCost(space, state_err, np.diag(costWeights ** 2))
+rcost = proxddp.QuadraticResidualCost(space, state_err_nd, np.diag(costWeights ** 2 * timeStep))
+# %end_jupyter_snippet
+
+# %jupyter_snippet termmodel
+# Terminal cost: same as the runningcost, but we increase the cost weights
+# in the library, they're a square matrix you can access through `cost.weights`
+term_cost = proxddp.QuadraticResidualCost(space, state_err_nd, np.diag(costWeights ** 2))
 _w = np.diagonal(term_cost.weights)
 _w.setflags(write=True)
 _w[:] = 1e4
@@ -86,9 +106,8 @@ _w[:] = 1e4
 
 
 # %jupyter_snippet ocp
-stage = proxddp.StageModel(rcost, dyn_model)
-stages_ = [stage] * T
-problem = proxddp.TrajOptProblem(x0, stages_, term_cost)
+stage = proxddp.StageModel(rcost, dyn_model_nd)
+problem = proxddp.TrajOptProblem(x0, [stage] * T, term_cost)
 
 TOL = 1e-5
 verbosity = proxddp.VERBOSE
