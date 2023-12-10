@@ -1,0 +1,6 @@
+# First, let's load the Pinocchio model for the Panda arm.
+robot = robex.load('panda')
+# The 2 last joints are for the fingers, not important in arm motion, freeze them
+robot.model,[robot.visual_model,robot.collision_model] = \
+    pin.buildReducedModel(robot.model,[robot.visual_model,robot.collision_model],[8,9],robot.q0)
+robot.q0 = robot.q0[:7].copy()

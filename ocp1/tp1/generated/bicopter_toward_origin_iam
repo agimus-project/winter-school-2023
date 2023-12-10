@@ -1,0 +1,2 @@
+# Getting the IAM using the simpletic Euler rule
+iam = crocoddyl.IntegratedActionModelEuler(damND, timeStep)

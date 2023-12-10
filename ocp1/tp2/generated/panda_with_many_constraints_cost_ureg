@@ -1,0 +1,4 @@
+# Cost for control regularization || u - g(q) ||**2
+uRegRes = crocoddyl.ResidualModelControlGrav(state)
+uRegCost = crocoddyl.CostModelResidual(state,uRegRes)
+runningCostModel.addCost("uReg", uRegCost, 1e-5)

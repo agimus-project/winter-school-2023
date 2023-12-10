@@ -1,0 +1,14 @@
+# Next, we need to create the running and terminal action model.
+# The forward dynamics (computed using ABA) are implemented
+# inside DifferentialActionModelFullyActuated.
+
+# The actuation model is here trivial: tau_q = u.
+actuationModel = crocoddyl.ActuationModelFull(state)
+# Running model composing the costs, the differential equations of motion and the integrator.
+runningModel = crocoddyl.IntegratedActionModelEuler(
+    crocoddyl.DifferentialActionModelFreeFwdDynamics(state, actuationModel, runningCostModel), TIME_STEP)
+runningModel.differential.armature = robot_model.armature
+# Terminal model following the same logic, although the integration is here trivial.
+terminalModel = crocoddyl.IntegratedActionModelEuler(
+    crocoddyl.DifferentialActionModelFreeFwdDynamics(state, actuationModel, terminalCostModel), 0.)
+terminalModel.differential.armature = robot_model.armature

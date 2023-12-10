@@ -1,0 +1,22 @@
+# Cost for 3d tracking || p(q) - pref ||**2
+goalTrackingRes = crocoddyl.ResidualModelFrameTranslation(state,FRAME_TIP,goal)
+goalTrackingCost = crocoddyl.CostModelResidual(state,goalTrackingRes)
+
+# Cost for 6d tracking  || log( M(q)^-1 Mref ) ||**2
+Mref = pin.SE3(pin.utils.rpyToMatrix(0,np.pi/2,-np.pi/2), goal)
+goal6TrackingRes = crocoddyl.ResidualModelFramePlacement(state,FRAME_TIP,Mref)
+goal6TrackingCost = crocoddyl.CostModelResidual(state,goal6TrackingRes)
+
+# Cost for state regularization || x - x* ||**2
+xRegWeights = crocoddyl.ActivationModelWeightedQuad(np.array([1,1,1,1,1,1,1, 1,1,1,1,2,2,2.]))
+xRegRes = crocoddyl.ResidualModelState(state,robot_model.x0)
+xRegCost = crocoddyl.CostModelResidual(state,xRegWeights,xRegRes)
+
+# Cost for control regularization || u - g(q) ||**2
+uRegRes = crocoddyl.ResidualModelControlGrav(state)
+uRegCost = crocoddyl.CostModelResidual(state,uRegRes)
+
+# Terminal cost for state regularization || x - x* ||**2
+xRegWeightsT=crocoddyl.ActivationModelWeightedQuad(np.array([1,1,1,1,1,1,1, 1,1,1,1,2,2,2.]))
+xRegResT = crocoddyl.ResidualModelState(state,robot_model.x0)
+xRegCostT = crocoddyl.CostModelResidual(state,xRegWeightsT,xRegResT)

@@ -1,0 +1,5 @@
+# Set robot model
+robot_model = robot.model
+robot_model.armature = np.ones(robot.model.nv)*2 # Arbitrary value representing the true armature
+robot_model.q0 = robot.q0.copy()
+robot_model.x0 = np.concatenate([robot_model.q0, np.zeros(robot_model.nv)])

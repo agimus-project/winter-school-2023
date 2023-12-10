@@ -1,0 +1,37 @@
+class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract):
+
+    def __init__(self):
+        '''
+        Init on top of the DAM class. 
+        Mostly set up the hyperparameters of this model (mass, length, cost, etc).
+        ng=0 says we have 0 constraints.
+        '''
+        crocoddyl.DifferentialActionModelAbstract.__init__(
+            self, crocoddyl.StateVector(6), nu=2, nr=12, ng=0
+        )
+        self.unone = np.zeros(self.nu)
+
+        self.span = .2
+        self.mass = 2.
+        self.g = 10
+        self.inertia = self.mass*self.span**2
+
+        self.costWeights = [
+            0.1, # x
+            0.1, # z
+            .10, # s
+            .10, # c
+            0.001, # vx
+            0.001, # vz
+            0.001, # w
+            0.0, # fr
+            0.0, # fl
+            0.001,0.001,0.001, # a
+        ]  # sin, 1-cos, x, xdot, thdot, f
+
+    def calc(self, data, x, u=None):
+        if u is None:
+            u = model.unone
+        # Getting the state and control variables
+        x1,x2,th,v1,v2,w = x
+        fr,fl = u

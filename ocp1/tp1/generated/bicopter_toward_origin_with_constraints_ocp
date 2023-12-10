@@ -1,0 +1,17 @@
+# Define the optimal control problem.
+problem = crocoddyl.ShootingProblem(x0, [iam] * T, terminalIam)
+
+# Solving it using DDP
+csolver = mim_solvers.SolverCSQP(problem)
+csolver.termination_tolerance = 1e-4
+csolver.with_callbacks = True
+csolver.use_filter_line_search = True
+csolver.filter_size = max_iter
+csolver.eps_abs = 1e-5
+csolver.eps_rel = 0.0
+csolver.max_qp_iters = 10000
+max_iter = 300
+    
+### SOLVE THE PROBLEM
+done = csolver.solve([x0]*(T+1), [np.zeros(2)]*T, max_iter)
+assert(done)

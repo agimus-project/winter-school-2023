@@ -1,0 +1,5 @@
+# Create a local DAM data for testing the implementation
+dad = dam.createData()
+x = dam.state.rand()
+u = np.array([12,8])                    
+dam.calc(dad,x,u)

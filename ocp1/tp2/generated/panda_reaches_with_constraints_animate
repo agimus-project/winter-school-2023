@@ -1,0 +1,4 @@
+# Visualizing the solution in gepetto-viewer
+for x in solver.xs:
+    viz.display(x[:robot.model.nq])
+    time.sleep(TIME_STEP)

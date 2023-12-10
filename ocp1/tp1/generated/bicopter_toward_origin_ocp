@@ -1,0 +1,11 @@
+# Define the optimal control problem.
+problem = crocoddyl.ShootingProblem(x0, [iam] * T, terminalIam)
+
+# Solving it using DDP
+ddp = crocoddyl.SolverDDP(problem)
+ddp.setCallbacks([crocoddyl.CallbackLogger(), crocoddyl.CallbackVerbose()])
+
+### SOLVE THE PROBLEM
+
+done = ddp.solve([], [], 300)
+assert(done)

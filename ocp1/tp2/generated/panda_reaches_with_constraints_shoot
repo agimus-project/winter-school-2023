@@ -1,0 +1,3 @@
+problem = crocoddyl.ShootingProblem(robot_model.x0,
+                                    [runningModel_init] + [runningModel] * (HORIZON_LENGTH - 1),
+                                    terminalModel)

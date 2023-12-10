@@ -1,0 +1,15 @@
+# Cost for state regularization || x - x* ||**2
+# We set up different values for the integral cost and terminal cost term.
+
+# Regularization is stronger on position than velocity (to account for typical unit scale)
+xRegWeights = crocoddyl.ActivationModelWeightedQuad(np.array([1,1,1,1,1,1,1, .1,.1,.1,.1,.1,.1,.1]))
+xRegRes = crocoddyl.ResidualModelState(state,robot_model.x0)
+xRegCost = crocoddyl.CostModelResidual(state,xRegWeights,xRegRes)
+runningCostModel.addCost("xReg", xRegCost, 1e-2)
+
+# Terminal cost for state regularization || x - x* ||**2
+# Require more strictly a small velocity at task end (but we don't car for the position)
+xRegWeightsT=crocoddyl.ActivationModelWeightedQuad(np.array([.5,.5,.5,.5,.5,.5,.5,  5.,5.,5.,5.,5.,5.,5.]))
+xRegResT = crocoddyl.ResidualModelState(state,robot_model.x0)
+xRegCostT = crocoddyl.CostModelResidual(state,xRegWeightsT,xRegResT)
+terminalCostModel.addCost("xReg", xRegCostT, .1)

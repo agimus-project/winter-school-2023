@@ -1,0 +1,6 @@
+model_term = crocoddyl.ActionModelUnicycle()
+
+model_term.costWeights = np.array([
+    100,   # state weight
+    0  # control weight
+]).T

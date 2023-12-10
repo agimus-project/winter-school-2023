@@ -1,0 +1,10 @@
+# Solving it using DDP
+# Create the DDP solver for this OC problem, verbose traces, with a logger
+ddp = crocoddyl.SolverDDP(problem)
+ddp.setCallbacks([
+    crocoddyl.CallbackLogger(),
+    crocoddyl.CallbackVerbose(),
+])
+
+# Solving it with the DDP algorithm
+ddp.solve([],[],1000)  # xs_init,us_init,maxiter

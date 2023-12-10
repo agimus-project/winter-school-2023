@@ -1,0 +1,2 @@
+T = 100
+problem = crocoddyl.ShootingProblem(robot_model.x0, [runningModel] * T, terminalModel)

@@ -1,0 +1,8 @@
+# Solving it with the DDP algorithm
+solver.solve([],[],1000)  # xs_init,us_init,maxiter
+
+ees = [ d.differential.pinocchio.oMf[FRAME_TIP].translation for d in solver.problem.runningDatas ]
+plt.plot(ees)
+plt.plot([0,HORIZON_LENGTH],[X_WALL_UPPER,X_WALL_UPPER],'b--')
+plt.plot([0,HORIZON_LENGTH],[X_WALL_LOWER,X_WALL_LOWER],'b--')
+plt.legend(['x', 'y', 'z'])

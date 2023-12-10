@@ -1,0 +1,4 @@
+def calcDiff(self, data, x, u=None):
+        # Advance user might implement the derivatives. Here
+        # we will rely on finite differences.
+        pass

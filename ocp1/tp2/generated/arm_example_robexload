@@ -1,0 +1,2 @@
+# First, let's load the Pinocchio model for the Talos arm.
+robot = robex.load('talos_arm')

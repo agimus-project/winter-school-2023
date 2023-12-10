@@ -3,13 +3,12 @@ import numpy as np
 import crocoddyl
 import unittest
 from utils.bicopter import plotBicopterSolution,ViewerBicopter
+import mim_solvers
 
-# %jupyter_snippet hyperparams
 ### HYPER PARAMS: horizon and initial state
 timeStep = 0.01
 x0 = np.array([1.0, 0.0, 0.0,  0.0, 0.0, 0.0])
-T = 50
-# %end_jupyter_snippet
+T = 100
 
 ### MODEL DEFINITION
 
@@ -26,17 +25,15 @@ T = 50
 # and cost derivatives dcost/dx,dcost/du (and corresponding hessians). Here we skip
 # the calcDiff and use finite differences to compute the Jacobians (of xout and r)
 # and approximate Hessian (with Gauss H=J'J).
-# %jupyter_snippet dam_header
 class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract):
 
     def __init__(self):
         '''
         Init on top of the DAM class. 
         Mostly set up the hyperparameters of this model (mass, length, cost, etc).
-        ng=0 says we have 0 constraints.
         '''
         crocoddyl.DifferentialActionModelAbstract.__init__(
-            self, crocoddyl.StateVector(6), nu=2, nr=12, ng=0
+            self, crocoddyl.StateVector(6), nu=2, nr=12, ng=2
         )
         self.unone = np.zeros(self.nu)
 
@@ -65,8 +62,6 @@ class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract)
         x1,x2,th,v1,v2,w = x
         fr,fl = u
 
-# %end_jupyter_snippet
-
         # Shortname for system parameters
         mass,span,g,inertia=self.mass,self.span,self.g,self.inertia
         s, c = np.sin(th), np.cos(th)
@@ -88,39 +83,28 @@ class DifferentialActionModelBicopter(crocoddyl.DifferentialActionModelAbstract)
                                               data.xout[0], data.xout[1], data.xout[2] ])
         data.cost = 0.5 * sum(data.r ** 2)
 
-# %jupyter_snippet dam_calcdiff_template
+        data.g = np.array([u[0], u[1]])
+
     def calcDiff(self, data, x, u=None):
         # Advance user might implement the derivatives. Here
         # we will rely on finite differences.
         pass
-# %end_jupyter_snippet
 
-# %jupyter_snippet dam
 # Creating the DAM for the bicopter
 dam = DifferentialActionModelBicopter()
-# %end_jupyter_snippet
 
-# %jupyter_snippet dam_test
-# Create a local DAM data for testing the implementation
-dad = dam.createData()
-x = dam.state.rand()
-u = np.array([12,8])                    
-dam.calc(dad,x,u)
-# %end_jupyter_snippet
-
-# %jupyter_snippet dam_nd
 # Using NumDiff for computing the derivatives. We specify the
 # withGaussApprox=True to have approximation of the Hessian based on the
 # Jacobian of the cost residuals.
 damND = crocoddyl.DifferentialActionModelNumDiff(dam, True)
-# %end_jupyter_snippet
 
-# %jupyter_snippet iam
+
+damND.g_lb = np.array([0, 0])
+damND.g_ub = np.array([20, 20])
+
 # Getting the IAM using the simpletic Euler rule
 iam = crocoddyl.IntegratedActionModelEuler(damND, timeStep)
-# %end_jupyter_snippet
 
-# %jupyter_snippet termmodel
 # Similarly creates a terminal model, but change the cost weights
 terminalDam = DifferentialActionModelBicopter()
 terminalDamND = crocoddyl.DifferentialActionModelNumDiff(terminalDam, True)
@@ -133,7 +117,6 @@ terminalDam.costWeights[3] = 100.0 # angle cos (second order)
 terminalDam.costWeights[4] = 100 # horizontal velocity
 terminalDam.costWeights[5] = 100 # vertical velocity
 terminalDam.costWeights[6] = 100 # angular velocity
-# %end_jupyter_snippet
 
 ### PROBLEM DEFINITION
 
@@ -142,51 +125,30 @@ terminalDam.costWeights[6] = 100 # angular velocity
 problem = crocoddyl.ShootingProblem(x0, [iam] * T, terminalIam)
 
 # Solving it using DDP
-ddp = crocoddyl.SolverDDP(problem)
-ddp.setCallbacks([crocoddyl.CallbackLogger(), crocoddyl.CallbackVerbose()])
-
+csolver = mim_solvers.SolverCSQP(problem)
+csolver.termination_tolerance = 1e-4
+csolver.with_callbacks = True
+csolver.use_filter_line_search = True
+csolver.filter_size = max_iter
+csolver.eps_abs = 1e-5
+csolver.eps_rel = 0.0
+csolver.max_qp_iters = 10000
+max_iter = 300
+    
 ### SOLVE THE PROBLEM
-
-done = ddp.solve([], [], 300)
+done = csolver.solve([x0]*(T+1), [np.zeros(2)]*T, max_iter)
 assert(done)
 # %end_jupyter_snippet
 
 ### PLOT 
 
-# %jupyter_snippet plot
-log = ddp.getCallbacks()[0]
-crocoddyl.plotOCSolution(log.xs, log.us, figIndex=1, show=False)
-crocoddyl.plotConvergence(
-    log.costs,
-    log.pregs,
-    log.dregs,
-    log.grads,
-    log.stops,
-    log.steps,
-    figIndex=2,
-    show=False,
-)
+crocoddyl.plotOCSolution(csolver.xs, csolver.us, figIndex=1, show=False)
 
-plotBicopterSolution(list(ddp.xs)[::3])
-# %end_jupyter_snippet
+plotBicopterSolution(list(csolver.xs)[::3])
 
 print('Type plt.show() to display the result.')
+plt.show()
 
-# %jupyter_snippet viz
 # Animate the solution in meshcat
 viz = ViewerBicopter()
-viz.displayTrajectory(ddp.xs,timeStep)
-# %end_jupyter_snippet
-
-### TEST ZONE ############################################################
-### This last part is to automatically validate the versions of this example.
-class LocalTest(unittest.TestCase):
-    def test_logs(self):
-        print(self.__class__.__name__)
-        self.assertTrue( len(ddp.xs) == len(ddp.us)+1 )
-        self.assertTrue( np.allclose(ddp.xs[0],ddp.problem.x0) )
-        self.assertTrue( ddp.stop<1e-6 )
-        
-if __name__ == "__main__":
-    LocalTest().test_logs()
-
+viz.displayTrajectory(csolver.xs,timeStep)

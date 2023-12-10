@@ -1,0 +1,6 @@
+# Set robot model
+robot_model = robot.model
+robot_model.armature = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.])*5
+robot_model.q0 = np.array([3.5,2,2,0,0,0,0])
+robot_model.x0 = np.concatenate([robot_model.q0, np.zeros(robot_model.nv)])
+robot_model.gravity *= 0

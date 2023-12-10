@@ -18,75 +18,63 @@ import time
 import mim_solvers
 import unittest
 
-# %jupyter_snippet robexload
 # First, let's load the Pinocchio model for the Panda arm.
 robot = robex.load('panda')
 # The 2 last joints are for the fingers, not important in arm motion, freeze them
 robot.model,[robot.visual_model,robot.collision_model] = \
     pin.buildReducedModel(robot.model,[robot.visual_model,robot.collision_model],[8,9],robot.q0)
 robot.q0 = robot.q0[:7].copy()
-# %end_jupyter_snippet
 
 # Hyperparameters of the movement
-# %jupyter_snippet hyperparameters
 HORIZON_LENGTH = 100
 TIME_STEP = 1e-2
 FRAME_TIP = robot.model.getFrameId("panda_hand_tcp")
 GOAL_POSITION = np.array([.2,0.5,.5])
 GOAL_PLACEMENT = pin.SE3(pin.utils.rpyToMatrix(-np.pi,0,np.pi/4), GOAL_POSITION)
-GOAL_POSITION = np.array([.3,0.6,.60])
+GOAL_POSITION = np.array([.2,0.6,.5])
 GOAL_PLACEMENT = pin.SE3(pin.utils.rpyToMatrix(-np.pi,-1.5,1.5), GOAL_POSITION)
 REACH_DIMENSION = "6d" # "3d"
+# %jupyter_snippet hyperparameters
+X_WALL_LOWER = .25
+X_WALL_UPPER = .35
 # %end_jupyter_snippet
 
 # Configure viewer to vizualize the robot and a green box to feature the goal placement.
-# %jupyter_snippet viz
 from utils.meshcat_viewer_wrapper import MeshcatVisualizer
 viz = MeshcatVisualizer(robot)
 viz.display(robot.q0)
 viz.addBox('world/goal',[.1,.1,.1],[0,1,0,1])
 viz.applyConfiguration('world/goal',GOAL_PLACEMENT)
-# %end_jupyter_snippet
 
-# %jupyter_snippet robot_model
 # Set robot model
 robot_model = robot.model
 robot_model.armature = np.ones(robot.model.nv)*2 # Arbitrary value representing the true armature
 robot_model.q0 = robot.q0.copy()
 robot_model.x0 = np.concatenate([robot_model.q0, np.zeros(robot_model.nv)])
-# %end_jupyter_snippet
 
 # Define the state to be x=(q,v) position and velocity of the robot in the configuration space.
-# %jupyter_snippet state
 state = crocoddyl.StateMultibody(robot_model)
-# %end_jupyter_snippet
 
 # Define the cost to be the sum of 3 terms: state regularisation xReg, control regularization uReg,
 # and end-effector reaching. We create a special value for the terminal cost.
-# %jupyter_snippet sumofcosts
 runningCostModel = crocoddyl.CostModelSum(state)
 terminalCostModel = crocoddyl.CostModelSum(state)
-# %end_jupyter_snippet
 
 # You can ask the end effector to reach a position (3d) or a placement (6d)
-# %jupyter_snippet cost_goal
 if REACH_DIMENSION == "3d":
     # Cost for 3d tracking || p(q) - pref ||**2
     goalTrackingRes = crocoddyl.ResidualModelFrameTranslation(state,FRAME_TIP,GOAL_POSITION)
-    goalTrackingCost = crocoddyl.CostModelResidual(state,goalTrackingRes)
-    runningCostModel.addCost("gripperPose", goalTrackingCost, .001)
-    terminalCostModel.addCost("gripperPose", goalTrackingCost, 1)
+    goalTrackingWeights = crocoddyl.ActivationModelWeightedQuad(np.array([1,1,1]))
 elif REACH_DIMENSION == "6d":
     # Cost for 6d tracking  || log( M(q)^-1 Mref ) ||**2
-    goal6TrackingRes = crocoddyl.ResidualModelFramePlacement(state,FRAME_TIP,GOAL_PLACEMENT)
-    goal6TrackingCost = crocoddyl.CostModelResidual(state,goal6TrackingRes)
-    runningCostModel.addCost("gripperPose", goal6TrackingCost, .001)
-    terminalCostModel.addCost("gripperPose", goal6TrackingCost, 4)
+    goalTrackingRes = crocoddyl.ResidualModelFramePlacement(state,FRAME_TIP,GOAL_PLACEMENT)
+    goalTrackingWeights = crocoddyl.ActivationModelWeightedQuad(np.array([1,1,1, 1,1,1]))
 else:
     assert( REACH_DIMENSION=="3d" or REACH_DIMENSION=="6d" )
-# %end_jupyter_snippet
+goalTrackingCost = crocoddyl.CostModelResidual(state,goalTrackingWeights,goalTrackingRes)
+runningCostModel.addCost("gripperPose", goalTrackingCost, .001)
+terminalCostModel.addCost("gripperPose", goalTrackingCost, 4)
     
-# %jupyter_snippet cost_xreg
 # Cost for state regularization || x - x* ||**2
 # We set up different values for the integral cost and terminal cost term.
 
@@ -102,44 +90,31 @@ xRegWeightsT=crocoddyl.ActivationModelWeightedQuad(np.array([.5,.5,.5,.5,.5,.5,.
 xRegResT = crocoddyl.ResidualModelState(state,robot_model.x0)
 xRegCostT = crocoddyl.CostModelResidual(state,xRegWeightsT,xRegResT)
 terminalCostModel.addCost("xReg", xRegCostT, .1)
-# %end_jupyter_snippet
 
-# %jupyter_snippet cost_ureg
 # Cost for control regularization || u - g(q) ||**2
 uRegRes = crocoddyl.ResidualModelControlGrav(state)
 uRegCost = crocoddyl.CostModelResidual(state,uRegRes)
 runningCostModel.addCost("uReg", uRegCost, 1e-5)
+
+
+# %jupyter_snippet constraint_manager
+# Define contraint
+runningConstraints = crocoddyl.ConstraintModelManager(state, robot.nv)
 # %end_jupyter_snippet
 
-
-
-
-
-# Define contraint
+# %jupyter_snippet eewall
 # Create contraint on end-effector
 frameTranslationResidual = crocoddyl.ResidualModelFrameTranslation(
     state, FRAME_TIP, np.zeros(3)
 )
-x_bound = 0.23
-z_bound = 0.6
-ee_contraint = crocoddyl.ConstraintModelResidual(
+eeWallContraint = crocoddyl.ConstraintModelResidual(
     state,
     frameTranslationResidual,
-    np.array([-np.inf, -np.inf, -np.inf]),
-    np.array([np.inf, np.inf, z_bound]),
+    np.array([X_WALL_LOWER, -np.inf, -np.inf]),
+    np.array([X_WALL_UPPER, +np.inf, +np.inf]),
 )
-
-jointLimitResiduals = crocoddyl.ResidualModelState(state,np.zeros(state.nx))
-xLow = np.concatenate( [ robot_model.lowerPositionLimit , -np.ones(robot_model.nv)*np.inf ] )
-xUp = np.concatenate( [ robot_model.upperPositionLimit , np.ones(robot_model.nv)*np.inf ] )
-jointLimitContraints = crocoddyl.ConstraintModelResidual(
-    state, jointLimitResiduals, xLow, xUp )
-
-runningConstraints = crocoddyl.ConstraintModelManager(state, robot.nv)
-
-runningConstraints.addConstraint("virtual_wall", ee_contraint)
-runningConstraints.addConstraint("joint_limits", jointLimitContraints)
-
+runningConstraints.addConstraint("ee_wall", eeWallContraint)
+# %end_jupyter_snippet
 
 
 
@@ -176,47 +151,39 @@ problem = crocoddyl.ShootingProblem(robot_model.x0,
                                     [runningModel_init] + [runningModel] * (HORIZON_LENGTH - 1),
                                     terminalModel)
 # %end_jupyter_snippet
-SQP_SOLVE = True
 
-if SQP_SOLVE:
-    solver = mim_solvers.SolverCSQP(problem)
-    solver.with_callbacks = True 
-    solver.termination_tolerance = 1e-4         # Termination criteria (KKT residual)
-    solver.max_qp_iters = 10000                 # Maximum number of QP iteration
-    solver.eps_abs = 1e-5                       # QP termination absolute criteria
-    solver.eps_rel = 0.                         # QP termination absolute criteria
+# %jupyter_snippet solver
+solver = mim_solvers.SolverCSQP(problem)
+solver.with_callbacks = True 
+solver.termination_tolerance = 1e-3         # Termination criteria (KKT residual)
+solver.max_qp_iters = 1000                  # Maximum number of QP iteration
+solver.eps_abs = 1e-5                       # QP termination absolute criteria, 1e-9 
+solver.eps_rel = 0.                         # QP termination absolute criteria
+solver.use_filter_line_search = True        # True by default, False = use merit function
+# %end_jupyter_snippet
 
-else:
-
-    solver = crocoddyl.SolverDDP(problem)
-    solver.setCallbacks(
-        [
-            crocoddyl.CallbackLogger(),
-            crocoddyl.CallbackVerbose(),
-        ]
-    )
-    
-
+# %jupyter_snippet solve_and_plot
 # Solving it with the DDP algorithm
 solver.solve([],[],1000)  # xs_init,us_init,maxiter
-#assert( ddp.stop == 1.9384159634520916e-10 )
 
-
-oMfs = [ d.differential.pinocchio.oMf[FRAME_TIP].translation for d in solver.problem.runningDatas ]
-plt.plot(oMfs)
-#plt.plot([0,HORIZON_LENGTH],[z_bound,z_bound],'g--')
+ees = [ d.differential.pinocchio.oMf[FRAME_TIP].translation for d in solver.problem.runningDatas ]
+plt.plot(ees)
+plt.plot([0,HORIZON_LENGTH],[X_WALL_UPPER,X_WALL_UPPER],'b--')
+plt.plot([0,HORIZON_LENGTH],[X_WALL_LOWER,X_WALL_LOWER],'b--')
 plt.legend(['x', 'y', 'z'])
+# %end_jupyter_snippet
 
 print('Type plt.show() to display the result.')
 
-# # Visualizing the solution in gepetto-viewer
+# %jupyter_snippet animate
+# Visualizing the solution in gepetto-viewer
 for x in solver.xs:
     viz.display(x[:robot.model.nq])
     time.sleep(TIME_STEP)
+# %end_jupyter_snippet
 
-    
-### TEST ZONE ############################################################
-### This last part is to automatically validate the versions of this example.
+# ## TEST ZONE ############################################################
+# ## This last part is to automatically validate the versions of this example.
 class LocalTest(unittest.TestCase):
     def test_logs(self):
         print(self.__class__.__name__)

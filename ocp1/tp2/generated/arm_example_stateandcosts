@@ -1,0 +1,3 @@
+state = crocoddyl.StateMultibody(robot_model)
+runningCostModel = crocoddyl.CostModelSum(state)
+terminalCostModel = crocoddyl.CostModelSum(state)

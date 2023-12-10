@@ -1,0 +1,5 @@
+from utils.meshcat_viewer_wrapper import MeshcatVisualizer
+viz = MeshcatVisualizer(robot)
+viz.display(robot.q0)
+viz.addBox('world/goal',[.1,.1,.1],[0,1,0,1])
+viz.applyConfiguration('world/goal',GOAL_PLACEMENT)

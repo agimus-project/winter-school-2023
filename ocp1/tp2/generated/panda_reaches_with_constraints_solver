@@ -1,0 +1,7 @@
+solver = mim_solvers.SolverCSQP(problem)
+solver.with_callbacks = True 
+solver.termination_tolerance = 1e-3         # Termination criteria (KKT residual)
+solver.max_qp_iters = 1000                  # Maximum number of QP iteration
+solver.eps_abs = 1e-5                       # QP termination absolute criteria, 1e-9 
+solver.eps_rel = 0.                         # QP termination absolute criteria
+solver.use_filter_line_search = True        # True by default, False = use merit function

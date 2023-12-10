@@ -1,0 +1,4 @@
+### HYPER PARAMS: horizon and initial state
+timeStep = 0.01
+x0 = np.array([1.0, 0.0, 0.0,  0.0, 0.0, 0.0])
+T = 50

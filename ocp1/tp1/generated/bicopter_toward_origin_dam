@@ -1,0 +1,2 @@
+# Creating the DAM for the bicopter
+dam = DifferentialActionModelBicopter()

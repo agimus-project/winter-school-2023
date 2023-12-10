@@ -1,0 +1,8 @@
+actuationModel = crocoddyl.ActuationModelFull(state)
+dt = 1e-2
+runningModel = crocoddyl.IntegratedActionModelEuler(
+    crocoddyl.DifferentialActionModelFreeFwdDynamics(state, actuationModel, runningCostModel), dt)
+runningModel.differential.armature = robot_model.armature
+terminalModel = crocoddyl.IntegratedActionModelEuler(
+    crocoddyl.DifferentialActionModelFreeFwdDynamics(state, actuationModel, terminalCostModel), 0.)
+terminalModel.differential.armature = robot_model.armature

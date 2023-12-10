@@ -1,0 +1,3 @@
+# Animate the solution in meshcat
+viz = ViewerBicopter()
+viz.displayTrajectory(ddp.xs,timeStep)

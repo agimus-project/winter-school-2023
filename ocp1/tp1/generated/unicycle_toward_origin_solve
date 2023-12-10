@@ -1,0 +1,2 @@
+done = ddp.solve()
+assert(done)

@@ -1,0 +1,8 @@
+HORIZON_LENGTH = 100
+TIME_STEP = 1e-2
+FRAME_TIP = robot.model.getFrameId("panda_hand_tcp")
+GOAL_POSITION = np.array([.2,0.5,.5])
+GOAL_PLACEMENT = pin.SE3(pin.utils.rpyToMatrix(-np.pi,0,np.pi/4), GOAL_POSITION)
+GOAL_POSITION = np.array([.2,0.6,.5])
+GOAL_PLACEMENT = pin.SE3(pin.utils.rpyToMatrix(-np.pi,-1.5,1.5), GOAL_POSITION)
+REACH_DIMENSION = "6d" # "3d"

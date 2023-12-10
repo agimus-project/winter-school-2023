@@ -1,0 +1,2 @@
+# Define contraint
+runningConstraints = crocoddyl.ConstraintModelManager(state, robot.nv)

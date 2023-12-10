@@ -1,0 +1,11 @@
+# Create contraint on end-effector
+frameTranslationResidual = crocoddyl.ResidualModelFrameTranslation(
+    state, FRAME_TIP, np.zeros(3)
+)
+eeWallContraint = crocoddyl.ConstraintModelResidual(
+    state,
+    frameTranslationResidual,
+    np.array([X_WALL_LOWER, -np.inf, -np.inf]),
+    np.array([X_WALL_UPPER, +np.inf, +np.inf]),
+)
+runningConstraints.addConstraint("ee_wall", eeWallContraint)

@@ -1,0 +1,2 @@
+# Add solvers for verbosity and plots
+ddp.setCallbacks([crocoddyl.CallbackLogger(), crocoddyl.CallbackVerbose()])

@@ -1,0 +1,5 @@
+runningCostModel.addCost("gripperPose", goalTrackingCost, .001)
+runningCostModel.addCost("xReg", xRegCost, 1e-3)
+runningCostModel.addCost("uReg", uRegCost, 1e-6)
+terminalCostModel.addCost("gripperPose", goal6TrackingCost, 10)
+terminalCostModel.addCost("xReg", xRegCostT, .01)

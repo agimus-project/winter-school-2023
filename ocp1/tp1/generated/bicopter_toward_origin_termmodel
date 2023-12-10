@@ -1,0 +1,12 @@
+# Similarly creates a terminal model, but change the cost weights
+terminalDam = DifferentialActionModelBicopter()
+terminalDamND = crocoddyl.DifferentialActionModelNumDiff(terminalDam, True)
+terminalIam = crocoddyl.IntegratedActionModelEuler(terminalDamND)
+
+terminalDam.costWeights[0] = 100 # horizontal position
+terminalDam.costWeights[1] = 100 # vertical position
+terminalDam.costWeights[2] = 100.0 # angle sin (first order)
+terminalDam.costWeights[3] = 100.0 # angle cos (second order)
+terminalDam.costWeights[4] = 100 # horizontal velocity
+terminalDam.costWeights[5] = 100 # vertical velocity
+terminalDam.costWeights[6] = 100 # angular velocity

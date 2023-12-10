@@ -1,0 +1,14 @@
+if REACH_DIMENSION == "3d":
+    # Cost for 3d tracking || p(q) - pref ||**2
+    goalTrackingRes = crocoddyl.ResidualModelFrameTranslation(state,FRAME_TIP,GOAL_POSITION)
+    goalTrackingWeights = crocoddyl.ActivationModelWeightedQuad(np.array([1,1,1]))
+elif REACH_DIMENSION == "6d":
+    # Cost for 6d tracking  || log( M(q)^-1 Mref ) ||**2
+    goalTrackingRes = crocoddyl.ResidualModelFramePlacement(state,FRAME_TIP,GOAL_PLACEMENT)
+    goalTrackingWeights = crocoddyl.ActivationModelWeightedQuad(np.array([0,0,0, 1,1,1]))
+else:
+    assert( REACH_DIMENSION=="3d" or REACH_DIMENSION=="6d" )
+
+goalTrackingCost = crocoddyl.CostModelResidual(state,goalTrackingWeights,goalTrackingRes)
+runningCostModel.addCost("gripperPose", goalTrackingCost, .001)
+terminalCostModel.addCost("gripperPose", goalTrackingCost, 4)
