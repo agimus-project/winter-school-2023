@@ -28,16 +28,18 @@ nu = 2
 space = manifolds.VectorSpace(6)  # state space
 # %end_jupyter_snippet
 
-# %jupyter_snippet state_error
-
-def bicopter_xdot_impl(x, u, span, mass, g):
+# %jupyter_snippet bicopter_acc
+def bicopter_acc_impl(x, u, span, mass, g):
+    # Implementation of the Bicopter acceleration
     inertia = mass * span**2
     x1, x2, th, v1, v2, w = x
     fr, fl = u
     s, c = np.sin(th), np.cos(th)
     loc_f = np.array([0, fr + fl, (fl - fr) * span])
     return np.array([-loc_f[1] * s / mass, loc_f[1] * c / mass - g, loc_f[2] / inertia])
+# %end_jupyter_snippet
 
+# %jupyter_snippet state_error
 
 class BicopterStateError(proxddp.StageFunction):
     def __init__(self):
@@ -47,8 +49,8 @@ class BicopterStateError(proxddp.StageFunction):
         x1, x2, th, v1, v2, w = x
         fr, fl = u
         s, c = np.sin(th), np.cos(th)
-        xdot = bicopter_xdot_impl(x, u, span, mass, grav)
-        r = np.array([x1, x2, s, 1 - c, v1, v2, w, fr, fl, *xdot])
+        acc = bicopter_acc_impl(x, u, span, mass, grav)
+        r = np.array([x1, x2, s, 1 - c, v1, v2, w, fr, fl, *acc])
         data.value[:] = r
 # %end_jupyter_snippet
 
@@ -66,10 +68,12 @@ class BicopterODE(dynamics.ODEAbstract):
         self.inertia = mass * span**2
 
     def forward(self, x, u, data: dynamics.ODEData):
+        # data.xdot must contain the first-order time derivative
+        # of the state variable x
         x1, x2, th, v1, v2, w = x
         fr, fl = u
         data.xdot[:3] = v1, v2, w
-        data.xdot[3:] = bicopter_xdot_impl(x, u, span, mass, grav)
+        data.xdot[3:] = bicopter_acc_impl(x, u, span, mass, grav)
 # %end_jupyter_snippet
 
 # %jupyter_snippet dForward
