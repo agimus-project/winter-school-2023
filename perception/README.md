@@ -42,7 +42,8 @@ pip install "git+https://github.com/agimus-project/happypose.git#egg=happypose[c
 Object pose estimators are based on pre-trained networks and the dataset of objects.
 To be able to create/run the tutorial code you need to download both with:
 ```
-TBD
+python -m happypose.toolbox.utils.download TBD all cosypose models and megapose models
+python -m happypose.toolbox.utils.download - -ycbv_compat_models
 ```
 
 
