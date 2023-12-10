@@ -14,11 +14,6 @@ This introductory lecture follows these two following references:
 * Forward and inverse dynamic algorithms
 * Analytical derivatives of forward and inverse dynamics
 
-## Tutorial
-
-* 1_geometry_and_dynamics.ipynb : introduction to the Pinocchio framework
-* 2_derivatives.ipynb: introduction to the analytical derivatives of forward and inverse dynamics
-
 ## Requirements
 
 You can go ahead and install all the required packages using conda. 
@@ -31,3 +26,20 @@ conda activate aws-sim1
 conda install -c agm-ws-2023 pinocchio exemple-robot-data
 pip install tqdm meshcat ipython
 ```
+
+## Tutorials
+
+* [1_geometry_and_dynamics.ipynb](./1_geometry_and_dynamics.ipynb) : introduction to the Pinocchio framework
+* [2_derivatives.ipynb](./2_derivatives.ipynb): introduction to the analytical derivatives of forward and inverse dynamics
+
+## Advanced tutorials using Casadi
+
+If you are already familiar with Pinocchio and its features, we invite to have fun with the support of Pinocchio and the Casadi framework supporting automatic differentiation through the computational graph of Pinocchio. Below, you will find a list of progressive tutorials to dive into this brandly new aspect of Pinocchio.
+
+* [0_setup.ipynb](https://github.com/nmansard/jnrh2023/blob/main/0_setup.ipynb)
+* [1_invgeom.ipynb](https://github.com/nmansard/jnrh2023/blob/main/1_invgeom.ipynb)
+* [2_trajopt_geom.ipynb](https://github.com/nmansard/jnrh2023/blob/main/2_trajopt_geom.ipynb)
+* [3_contact_dynamics.ipynb](https://github.com/nmansard/jnrh2023/blob/main/3_contact_dynamics.ipynb)
+* [4_with_obstacles.ipynb](https://github.com/nmansard/jnrh2023/blob/main/4_with_obstacles.ipynb)
+
+More details are available [here](https://github.com/nmansard/jnrh2023).
