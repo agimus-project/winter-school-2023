@@ -2,6 +2,15 @@
 
 [Main website](https://aws.sciencesconf.org/)
 
+## Tutorials
+
+In this winter school, we will cover three main different topics:
+
+- [Simulation](./simulation)
+    - [Simulation #1: Rigid body dynamics](./simulation/sim1_rigid_body/)
+- [Optimal control](./ocp/)
+- [Motion planning]
+
 ## Installing dependencies
 
 Dependencies for the coursework include specific versions of Pinocchio, hpp-fcl, crocoddyl, alligator, and other software that have yet to be fully released.
