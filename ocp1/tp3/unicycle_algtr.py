@@ -41,7 +41,7 @@ class UnicycleDynamics(dynamics.ExplicitDynamicsModel):
 # %end_jupyter_snippet
 
 # %jupyter_snippet model
-cost_weights = np.array([10.0, 1.0]) ** 2
+cost_weights = np.array([1.0, 1.0])
 dt = 0.1
 dyn_model = UnicycleDynamics(dt)
 rcost = proxddp.QuadraticCost(
