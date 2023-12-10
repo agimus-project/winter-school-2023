@@ -1,11 +1,33 @@
-# Rigid body dynamic models and algorithms
+# Rigid body dynamics: an introduction
 
-## Course
+This introductory lecture follows these two following references:
+  - Featherstone, R. (2014). [Rigid body dynamics algorithms](https://link.springer.com/content/pdf/10.1007/978-1-4899-7560-7.pdf). Springer
+  - Featherstone, R. (2010). [A beginner's guide to 6-d vectors (part 1)](). IEEE robotics & automation magazine, 17(3), 83-94
+  - Featherstone, R. (2010). [A beginner's guide to 6-D vectors (part 2) - tutoria](). IEEE robotics & automation magazine, 17(4), 88-99.
+  - Carpentier, J., Saurel, G., Buondonno, G., Mirabel, J., Lamiraux, F., Stasse, O., & Mansard, N. (2019, January). [The Pinocchio C++ library: A fast and flexible implementation of rigid body dynamics algorithms and their analytical derivatives](https://hal.laas.fr/hal-01866228/document). In 2019 IEEE/SICE International Symposium on System Integration (SII)
 
-* topic 1
-* topic ...
-* topic N
+## Content
+
+* Introduction to spatial quantities: spatial velocity, force, inertia, etc.
+* Introduction to poly-articulated systems: model and data
+* Forward and inverse kinematics
+* Forward and inverse dynamic algorithms
+* Analytical derivatives of forward and inverse dynamics
 
 ## Tutorial
 
-[prepare relevant files in this directory: notebooks? Python scripts?]
+* 1_geometry_and_dynamics.ipynb : introduction to the Pinocchio framework
+* 2_derivatives.ipynb: introduction to the analytical derivatives of forward and inverse dynamics
+
+## Requirements
+
+You can go ahead and install all the required packages using conda. 
+Conda can be easily installed on your machine by following this [install procedure](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+After the installation of conda, you can proceed to the installation of the required packages:
+ 
+```bash
+conda create -n aws-sim1 python=3.10
+conda activate aws-sim1
+conda install -c agm-ws-2023 pinocchio exemple-robot-data
+pip install tqdm meshcat ipython
+```
