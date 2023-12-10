@@ -16,6 +16,7 @@ import example_robot_data as robex
 import matplotlib.pylab as plt
 import time
 import mim_solvers
+import unittest
 
 # %jupyter_snippet robexload
 # First, let's load the Pinocchio model for the Panda arm.
@@ -202,12 +203,27 @@ solver.solve([],[],1000)  # xs_init,us_init,maxiter
 
 
 oMfs = [ d.differential.pinocchio.oMf[FRAME_TIP].translation for d in solver.problem.runningDatas ]
-plt.ion()
 plt.plot(oMfs)
 #plt.plot([0,HORIZON_LENGTH],[z_bound,z_bound],'g--')
 plt.legend(['x', 'y', 'z'])
+
+print('Type plt.show() to display the result.')
 
 # # Visualizing the solution in gepetto-viewer
 for x in solver.xs:
     viz.display(x[:robot.model.nq])
     time.sleep(TIME_STEP)
+
+    
+### TEST ZONE ############################################################
+### This last part is to automatically validate the versions of this example.
+class LocalTest(unittest.TestCase):
+    def test_logs(self):
+        print(self.__class__.__name__)
+        self.assertTrue( len(solver.xs) == len(solver.us)+1 )
+        self.assertTrue( np.allclose(solver.xs[0],solver.problem.x0) )
+        self.assertTrue( solver.stoppingCriteria()<1e-6 )
+        
+if __name__ == "__main__":
+    LocalTest().test_logs()
+

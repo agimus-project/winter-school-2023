@@ -16,6 +16,7 @@ import numpy as np
 import example_robot_data as robex
 import matplotlib.pylab as plt
 import time
+import unittest
 # %end_jupyter_snippet
 
 # %jupyter_snippet robexload
@@ -170,3 +171,15 @@ for x in ddp.xs:
     viz.display(x[:robot.model.nq])
     time.sleep(TIME_STEP)
 # %end_jupyter_snippet
+
+### TEST ZONE ############################################################
+### This last part is to automatically validate the versions of this example.
+class LocalTest(unittest.TestCase):
+    def test_logs(self):
+        print(self.__class__.__name__)
+        self.assertTrue( len(ddp.xs) == len(ddp.us)+1 )
+        self.assertTrue( np.allclose(ddp.xs[0],ddp.problem.x0) )
+        self.assertTrue( ddp.stop<1e-6 )
+        
+if __name__ == "__main__":
+    LocalTest().test_logs()

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import crocoddyl
 import unittest
-from utils.bicopter import plotBicopter, plotBicopterSolution,ViewerBicopter
+from utils.bicopter import plotBicopterSolution,ViewerBicopter
 
 # %jupyter_snippet hyperparams
 ### HYPER PARAMS: horizon and initial state
@@ -175,3 +175,16 @@ print('Type plt.show() to display the result.')
 viz = ViewerBicopter()
 viz.displayTrajectory(ddp.xs,timeStep)
 # %end_jupyter_snippet
+
+### TEST ZONE ############################################################
+### This last part is to automatically validate the versions of this example.
+class LocalTest(unittest.TestCase):
+    def test_logs(self):
+        print(self.__class__.__name__)
+        self.assertTrue( len(ddp.xs) == len(ddp.us)+1 )
+        self.assertTrue( np.allclose(ddp.xs[0],ddp.problem.x0) )
+        self.assertTrue( ddp.stop<1e-6 )
+        
+if __name__ == "__main__":
+    LocalTest().test_logs()
+
