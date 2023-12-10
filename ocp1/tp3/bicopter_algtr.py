@@ -49,10 +49,11 @@ class BicopterStateError(proxddp.StageFunction):
         x1, x2, th, v1, v2, w = x
         fr, fl = u
         s, c = np.sin(th), np.cos(th)
+        # finish implementation here
+# %end_jupyter_snippet
         acc = bicopter_acc_impl(x, u, span, mass, grav)
         r = np.array([x1, x2, s, 1 - c, v1, v2, w, fr, fl, *acc])
         data.value[:] = r
-# %end_jupyter_snippet
 
 # %jupyter_snippet computeJacobians
     def computeJacobians(self, x, u, y, data: dynamics.StageFunctionData):
@@ -72,9 +73,10 @@ class BicopterODE(dynamics.ODEAbstract):
         # of the state variable x
         x1, x2, th, v1, v2, w = x
         fr, fl = u
+        # finish implementation here
+# %end_jupyter_snippet
         data.xdot[:3] = v1, v2, w
         data.xdot[3:] = bicopter_acc_impl(x, u, span, mass, grav)
-# %end_jupyter_snippet
 
 # %jupyter_snippet dForward
     def dForward(self, x, u, data: dynamics.ODEData):
@@ -84,13 +86,16 @@ class BicopterODE(dynamics.ODEAbstract):
 
 # %jupyter_snippet dynamics_and_residual
 ode = BicopterODE()
-dyn_model_ = dynamics.IntegratorSemiImplEuler(ode, timeStep)  # has no derivatives
 state_err_ = BicopterStateError()
+# %end_jupyter_snippet
+
+# %jupyter_snippet integrator
+dyn_model_ = dynamics.IntegratorSemiImplEuler(ode, timeStep)  # has no derivatives
 # %end_jupyter_snippet
 
 # %jupyter_snippet finite_difference
 # Use the finite-difference helpers from proxddp
-# DynamicsFiniteDifferenceHelper, FiniteDifferenceHelper, CostFiniteDifferenceHelper 
+# DynamicsFiniteDifferenceHelper, FiniteDifferenceHelper 
 fd_eps = 1e-4
 dyn_model_nd = proxddp.DynamicsFiniteDifferenceHelper(space, dyn_model_, fd_eps)
 state_err_nd = proxddp.FiniteDifferenceHelper(space, state_err_, fd_eps)
