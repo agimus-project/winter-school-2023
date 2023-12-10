@@ -130,9 +130,9 @@ xs_opt = rs.xs.tolist()
 
 # %jupyter_snippet plot
 plotBicopterSolution(xs_opt)
+# %end_jupyter_snippet
 
 print('Type plt.show() to display the result.')
-# %end_jupyter_snippet
 
 # %jupyter_snippet viz
 viz = ViewerBicopter()
