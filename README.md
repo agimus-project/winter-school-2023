@@ -2,6 +2,8 @@
 
 [Main website](https://aws.sciencesconf.org/)
 
+[Chat room](https://matrix.to/#/#aws-main-hall:laas.fr)
+
 ## Tutorials
 
 In this winter school, we will cover three main different topics:
