@@ -9,12 +9,14 @@ For temporal integration, we use an Euler implicit integration scheme.
 This example is based on https://github.com/Gepetto/supaero2023/blob/main/tp5/arm_example.py
 '''
 
+# %jupyter_snippet import
 import crocoddyl
 import pinocchio as pin
 import numpy as np
 import example_robot_data as robex
 import matplotlib.pylab as plt
 import time
+# %end_jupyter_snippet
 
 # %jupyter_snippet robexload
 # First, let's load the Pinocchio model for the Panda arm.
@@ -131,20 +133,21 @@ terminalModel.differential.armature = robot_model.armature
 problem = crocoddyl.ShootingProblem(robot_model.x0, [runningModel] * HORIZON_LENGTH, terminalModel)
 # %end_jupyter_snippet
 
+# %jupyter_snippet solve
 # Solving it using DDP
 # Create the DDP solver for this OC problem, verbose traces, with a logger
 ddp = crocoddyl.SolverDDP(problem)
-# %jupyter_snippet callbacks
 ddp.setCallbacks([
     crocoddyl.CallbackLogger(),
     crocoddyl.CallbackVerbose(),
 ])
-# %end_jupyter_snippet
 
 # Solving it with the DDP algorithm
 ddp.solve([],[],1000)  # xs_init,us_init,maxiter
+# %end_jupyter_snippet
 #assert( ddp.stop == 1.9384159634520916e-10 )
 
+# %jupyter_snippet plot
 # Plotting the solution and the DDP convergence
 log = ddp.getCallbacks()[0]
 crocoddyl.plotOCSolution(log.xs, log.us, figIndex=1, show=False)
@@ -158,9 +161,12 @@ crocoddyl.plotConvergence(
     figIndex=2,
     show=False,
 )
+# %end_jupyter_snippet
 print('Type plt.show() to display the plots')
 
+# %jupyter_snippet animate
 # # Visualizing the solution in gepetto-viewer
 for x in ddp.xs:
     viz.display(x[:robot.model.nq])
     time.sleep(TIME_STEP)
+# %end_jupyter_snippet
