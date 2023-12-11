@@ -55,9 +55,12 @@ desktop in your webbrowser.
 
 #### Docker use
 
+start with a `git clone https://github.com/agimus-project/winter-school-2023`
+
 - for HPP tutorials: it should work out of the box
 - for ROS tutorials: `source /opt/pal/alum/setup.bash`
 - for others, run `/opt/miniconda3/bin/conda init && bash`, then
     - for Pinocchio / Crocoddyl tutorials: `conda activate /aws1`
-        - for the mim-solvers part, you'll need `conda install -yp /aws1 agm-ws-2023-2::mim-solvers`
+        - for the mim-solvers part, you'll need:
+            `sudo /opt/miniconda3/bin/conda install -yp /aws1 agm-ws-2023-2::mim-solvers`
     - for Happypose tutorials: `conda activate /aws2`
