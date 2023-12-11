@@ -41,4 +41,22 @@ We also invite you to leverage [visual studio code](https://code.visualstudio.co
 Don't forget to install the [Jupyter module](https://code.visualstudio.com/docs/datascience/jupyter-notebooks) for [visual studio code](https://code.visualstudio.com/).
 
 ### Docker installation
-[[Add Docker instructions here]]
+
+First, get the image:
+- `docker pull reg.saurel.me/aws` on the Eduroam network
+- `docker pull reg-w.saurel.me/aws` on the wired network
+
+To run it, if you are on Linux, PAL provides helpers at https://github.com/pal-robotics/pal_docker_utils to allow
+running graphical applications.
+
+You could also run it with eg. `docker run --rm -it reg.saurel.me/aws`, and once inside run the `docker-vnc` to
+retrieve a link like http://localhost:6080/vnc.html?host=localhost&port=6080 : clic on it to open a virtual desktop.
+
+#### Docker use
+
+
+- for HPP tutorials: it should work out of the box
+- for ROS tutorials: `source /opt/pal/alum/setup.bash`
+- for others, run `/opt/miniconda3/bin/conda init && bash`, then
+    - for Pinocchio / Crocoddyl tutorials: `conda activate /aws1`
+    - for Happypose tutorials: `conda activate /aws2`
