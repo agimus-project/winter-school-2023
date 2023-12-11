@@ -37,9 +37,9 @@ def load_rgb_images_for_scene(scene_id: int, data_dir: Path | None = None):
     """Get iterator that yields images for the given scene id."""
     data_dir = get_perception_data_dir(data_dir)
     scene_name = f"scene{scene_id}"
-    if scene_name in [1, 2]:
+    if scene_id in [1, 2]:
         scene_name += "_obj_14"
-    elif scene_name in [3, 4]:
+    elif scene_id in [3, 4]:
         scene_name += "_obj_05"
     scene_path = data_dir / scene_name
     for path_image in sorted(scene_path.glob("color_*")):

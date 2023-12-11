@@ -18,7 +18,6 @@ from perception.aws_cosypose import AWSCosyPose
 from perception.loading_utils import load_rgb_images_for_scene, load_camera_data_color
 
 if __name__ == "__main__":
-    # todo: ask mederic to include camera json into data
     camera_data = load_camera_data_color()
     image = next(load_rgb_images_for_scene(scene_id=1))
 
@@ -43,6 +42,7 @@ if __name__ == "__main__":
             output_image, [xmin, ymin], [xmax, ymax], color=[255, 0, 0], thickness=2
         )
 
+    # cv2.imwrite("/tmp/detections.png", cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR))
     cv2.imshow("Detections", cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR))
     cv2.waitKey()
     cv2.destroyWindow("Detections")

@@ -2,7 +2,7 @@
 
 The perception course will cover two main areas: (i) object 6D pose estimation from images and (ii) object tracking from videos.
 The former is based on [HappyPose](https://github.com/agimus-project/happypose), our open source reimplementation of state-of-the-art object pose estimation methods called CosyPose and MegaPose.
-The latter is based on DLR Tracker... **Mederic: TBD**
+The latter is based on DLR Tracker based on the work of Stoiber et al.
 
 The course is based on following publications:
 x
@@ -42,9 +42,19 @@ pip install "git+https://github.com/agimus-project/happypose.git#egg=happypose[c
 Object pose estimators are based on pre-trained networks and the dataset of objects.
 To be able to create/run the tutorial code you need to download both with:
 ```
-python -m happypose.toolbox.utils.download TBD all cosypose models and megapose models
+python -m happypose.toolbox.utils.download --cosypose_models detector-bop-ycbv-pbr--970850  coarse-bop-ycbv-pbr--724183 refiner-bop-ycbv-pbr--604090
+python -m happypose.toolbox.utils.download --megapose_models
 python -m happypose.toolbox.utils.download - -ycbv_compat_models
 ```
+
+### Downloading the tutorial data
+
+Download and unzip pre-recorded image sequences (e.g. in folder `winter-school-2023/perception/data`) from [this link](https://drive.google.com/file/d/130iL2vcfUhEsQ-1josiaUOVUYLXCtBHN/view?usp=sharing). These sequences were recorded with a RealSense D435, whose intrinsics parameters are provided.
+This folders should contains:
+- `scene*` folders: contains sequences of `color*.png` and `depth*.png` images
+- `cam_d435_640.yaml`: camera intrinsics
+- `obj_0000*.obj` files: mesh of object in recorded sequences
+
 
 
 ## Tutorial
@@ -53,29 +63,34 @@ The tutorial is split into several scripts. In all scripts there are places mark
 
 ### Object Detection
 
-`TBD show input - expected output`
+The first practical `01_object_detection.py` will show you how to use object detector on the image.
+The detector for YCBV object is loaded and your goal is to filter the detections based on the object ID.
+You should see predictions like this:
+
+![detection](doc/detections.png)
+
 
 ### Object Pose Estimation (CosyPose)
 
-`TBD show input - expected output`
+Practical `02_cosypose.py` shows how to estimate the 6D pose of the object that was known at the train time. The script visualises the projection of the object on the estimated pose into the image:
+
+![cosypose](doc/cosypose.png)
 
 ### Object Pose Estimation (MegaPose)
 
-`TBD show input - expected output`
+Practical `03_megapose.py` shows how to use 6D pose estimator for objects unknown at the train time:
+
+![megapose](doc/megapose.png)
 
 ### Object pose Tracking
 
 #### Installation
+
 We will now investigate an efficient object pose tracking algorithm, based on the work of Stoiber et al.
 We wrote a python wrapper for ease of experimentation, follow installation instructions at [pym3t](https://github.com/MedericFourmy/pym3t).  
 :warning: at the time we are writing this tutorial, macOS installation is not supported.
 
 #### Object tracking on recorded sequences
-Download and unzip pre-recorded image sequences (e.g. in folder `winter-school-2023/perception/data`) from [this link](https://drive.google.com/file/d/130iL2vcfUhEsQ-1josiaUOVUYLXCtBHN/view?usp=sharing). These sequences were recorded with a RealSense D435, whose intrinsics parameters are provided.
-This folders should contains:
-- `scene*` folders: contains sequences of `color*.png` and `depth*.png` images
-- `cam_d435_640.yaml`: camera intrinsics
-- `obj_0000*.obj` files: mesh of object in recorded sequences
 
 Run example script:  
 `python run_tracker_image_dir_example.py --use_region -b obj_000014 -m data/aws_tracker_videos -i data/aws_tracker_videos/scene1_obj_14 -c data/aws_tracker_videos/cam_d435_640.yaml -s`
