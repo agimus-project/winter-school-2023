@@ -59,4 +59,5 @@ desktop in your webbrowser.
 - for ROS tutorials: `source /opt/pal/alum/setup.bash`
 - for others, run `/opt/miniconda3/bin/conda init && bash`, then
     - for Pinocchio / Crocoddyl tutorials: `conda activate /aws1`
+        - for the mim-solvers part, you'll need `conda install -yp /aws1 agm-ws-2023-2::mim-solvers`
     - for Happypose tutorials: `conda activate /aws2`
