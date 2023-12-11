@@ -55,7 +55,7 @@ class BicopterStateError(proxddp.StageFunction):
         data.value[:] = r
 
 # %jupyter_snippet computeJacobians
-    def computeJacobians(self, x, u, y, data: dynamics.StageFunctionData):
+    def computeJacobians(self, x, u, y, data: proxddp.StageFunctionData):
         # you can implement the derivatives of the error function here
         pass
 # %end_jupyter_snippet
