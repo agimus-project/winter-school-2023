@@ -49,11 +49,11 @@ First, get the image:
 To run it, if you are on Linux, PAL provides helpers at https://github.com/pal-robotics/pal_docker_utils to allow
 running graphical applications.
 
-You could also run it with eg. `docker run --rm -it reg.saurel.me/aws`, and once inside run the `docker-vnc` to
-retrieve a link like http://localhost:6080/vnc.html?host=localhost&port=6080 : clic on it to open a virtual desktop.
+You could also run it with eg. `docker run --rm --net=host -it reg.saurel.me/aws`, and once inside run the `docker-vnc`
+command to retrieve a link like http://localhost:6080/vnc.html?host=localhost&port=6080 : clic on it to open a virtual
+desktop in your webbrowser.
 
 #### Docker use
-
 
 - for HPP tutorials: it should work out of the box
 - for ROS tutorials: `source /opt/pal/alum/setup.bash`
