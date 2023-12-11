@@ -14,9 +14,6 @@
 #
 import cv2
 import numpy as np
-from happypose.pose_estimators.cosypose.cosypose.integrated.pose_estimator import (
-    PoseEstimator,
-)
 
 from happypose.toolbox.inference.types import ObservationTensor
 
@@ -50,6 +47,8 @@ if __name__ == "__main__":
     renderer = pose_estimator.refiner_model.renderer
     output_image = render_overlay(image, renderer, predictions=preds)
     output_image = draw_bounding_boxes(output_image, detections)
+
+    # todo: visualize all predictions, after coarse, after 1 refiner, ...
 
     cv2.imshow("Poses overlay", cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR))
     cv2.waitKey()
