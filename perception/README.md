@@ -5,7 +5,7 @@ The former is based on [HappyPose](https://github.com/agimus-project/happypose),
 The latter is based on DLR Tracker based on the work of Stoiber et al.
 
 The course is based on following publications:
-x
+
 - Fourmy, M., Priban, V., Behrens, J. K., Mansard, N., Sivic, J., & Petrik, V. (2023). **Visually Guided Model Predictive Robot Control via 6D Object Pose Localization and Tracking**. In review for ICRA 2023. [ArXiv](https://arxiv.org/pdf/2311.05344), [project page](https://data.ciirc.cvut.cz/public/projects/2023VisualMPC/).
 - Labbé, Y., Manuelli, L., Mousavian, A., Tyree, S., Birchfield, S., Tremblay, J., Carpentier, J., Aubry, M., Fox, D. and Sivic, J., (2022). **Megapose: 6d pose estimation of novel objects via render & compare**. [ArXiv](https://arxiv.org/abs/2212.06870), [project page](https://megapose6d.github.io/).
 - Labbé, Y., Carpentier, J., Aubry, M., & Sivic, J. (2020). **Cosypose: Consistent multi-view multi-object 6d pose estimation**. In ECCV 2020. [ArXiv](https://arxiv.org/abs/2008.08465), [project page](https://www.di.ens.fr/willow/research/cosypose/).
@@ -49,7 +49,7 @@ python -m happypose.toolbox.utils.download - -ycbv_compat_models
 
 ### Downloading the tutorial data
 
-Download and unzip pre-recorded image sequences (e.g. in folder `winter-school-2023/perception/data`) from [this link](https://drive.google.com/file/d/130iL2vcfUhEsQ-1josiaUOVUYLXCtBHN/view?usp=sharing). These sequences were recorded with a RealSense D435, whose intrinsics parameters are provided.
+Download and unzip pre-recorded image sequences (in folder `winter-school-2023/perception/data`) from [this link](https://drive.google.com/file/d/130iL2vcfUhEsQ-1josiaUOVUYLXCtBHN/view?usp=sharing). These sequences were recorded with a RealSense D435, whose intrinsics parameters are provided.
 This folders should contains:
 - `scene*` folders: contains sequences of `color*.png` and `depth*.png` images
 - `cam_d435_640.yaml`: camera intrinsics
