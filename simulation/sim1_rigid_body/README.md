@@ -23,7 +23,7 @@ After the installation of conda, you can proceed to the installation of the requ
 ```bash
 conda create -n aws-sim python=3.10
 conda activate aws-sim
-conda install -c agm-ws-2023 pinocchio example-robot-data
+conda install -c agm-ws-2023 -c conda-forge pinocchio example-robot-data
 pip install tqdm meshcat ipython
 ```
 

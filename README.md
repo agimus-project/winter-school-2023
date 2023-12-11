@@ -27,7 +27,7 @@ You can install a package by typing in your terminal:
 ```bash
 conda create -n aws python=3.10
 conda activate aws
-conda install -c agm-ws-2023 my_package_name
+conda install -c agm-ws-2023 -c conda-forge my_package_name
 ```
 The two first lines create a new environment named `aws` and then activate it.
 The third line installs `my_package_name`using the [channel](https://anaconda.org/agm-ws-2023) of the AGIMUS winter school where the packages have been compiled.
