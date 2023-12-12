@@ -29,7 +29,7 @@ def materialFromColor(color):
 
 
 class MeshcatVisualizer(PMV):
-    def __init__(self, robot=None, model=None, collision_model=None, visual_model=None, url='classical', autoclean=False):
+    def __init__(self, robot=None, model=None, collision_model=None, visual_model=None, url=None, autoclean=False):
         if robot is not None:
             super().__init__(robot.model, robot.collision_model, robot.visual_model)
         elif model is not None:
