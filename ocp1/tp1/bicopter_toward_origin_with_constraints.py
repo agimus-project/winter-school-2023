@@ -126,16 +126,17 @@ problem = crocoddyl.ShootingProblem(x0, [iam] * T, terminalIam)
 
 # Solving it using DDP
 csolver = mim_solvers.SolverCSQP(problem)
+MAX_ITER = 300
 csolver.termination_tolerance = 1e-4
 csolver.with_callbacks = True
 csolver.use_filter_line_search = True
-csolver.filter_size = 300 # max_iter
+csolver.filter_size = MAX_ITER
 csolver.eps_abs = 1e-5
 csolver.eps_rel = 0.0
 csolver.max_qp_iters = 10000
     
 ### SOLVE THE PROBLEM
-done = csolver.solve([x0]*(T+1), [np.zeros(2)]*T, max_iter)
+done = csolver.solve([x0]*(T+1), [np.zeros(2)]*T, MAX_ITER)
 assert(done)
 # %end_jupyter_snippet
 
@@ -146,7 +147,6 @@ crocoddyl.plotOCSolution(csolver.xs, csolver.us, figIndex=1, show=False)
 plotBicopterSolution(list(csolver.xs)[::3])
 
 print('Type plt.show() to display the result.')
-plt.show()
 
 # Animate the solution in meshcat
 viz = ViewerBicopter()
