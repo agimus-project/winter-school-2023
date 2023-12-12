@@ -1,10 +1,12 @@
 import hppfcl
 import numpy as np
+import meshcat
 import meshcat.geometry as mg
+import meshcat.transformations as tf
 import pinocchio as pin
 from distutils.version import LooseVersion
 import warnings
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List
 MsgType = Dict[str, Union[str, bytes, bool, float, 'MsgType']]
 
 def npToTTuple(M):
@@ -23,7 +25,7 @@ def npToTuple(M):
     return npToTTuple(M)
 
 
-def loadPrimitive(self, geometry_object: hppfcl.ShapeBase):
+def load_primitive(geom: hppfcl.ShapeBase):
 
     import meshcat.geometry as mg
 
@@ -36,7 +38,6 @@ def loadPrimitive(self, geometry_object: hppfcl.ShapeBase):
 
     # Cones need to be rotated
 
-    geom: hppfcl.ShapeBase = geometry_object.geometry
     if isinstance(geom, hppfcl.Capsule):
         if hasattr(mg, 'TriangularMeshGeometry'):
             obj = createCapsule(2. * geom.halfLength, geom.radius)
@@ -54,8 +55,8 @@ def loadPrimitive(self, geometry_object: hppfcl.ShapeBase):
         To = np.eye(4)
         To[:3, 3] = geom.d * geom.n
         TranslatedPlane = type("TranslatedPlane", (mg.Plane,), {"intrinsic_transform": lambda self: To})
-        sx = geometry_object.meshScale[0] * 10
-        sy = geometry_object.meshScale[1] * 10
+        sx = 10
+        sy = 10
         obj = TranslatedPlane(sx, sy)
     elif isinstance(geom, hppfcl.Ellipsoid):
         obj = mg.Ellipsoid(geom.radii)
@@ -68,7 +69,7 @@ def loadPrimitive(self, geometry_object: hppfcl.ShapeBase):
     elif isinstance(geom, hppfcl.ConvexBase):
         obj = loadMesh(geom)
     else:
-        msg = "Unsupported geometry type for %s (%s)" % (geometry_object.name, type(geom) )
+        msg = "Unsupported geometry type for (%s)" % (type(geom) )
         warnings.warn(msg, category=UserWarning, stacklevel=2)
         obj = None
 
@@ -169,3 +170,122 @@ class Plane(mg.Geometry):
             u"widthSegments": self.widthSegments,
             u"heightSegments": self.heightSegments,
         }
+
+def meshcat_material(r, g, b, a):
+    material = mg.MeshPhongMaterial()
+    material.color = int(r * 255) * 256 ** 2 + int(g * 255) * 256 + \
+        int(b * 255)
+    material.opacity = a
+    return material
+
+def create_visualizer(grid: bool=False, axes: bool=False) -> meshcat.Visualizer:
+    # vis = meshcat.Visualizer(zmq_url="tcp://127.0.0.1:6000")
+    vis = meshcat.Visualizer()
+    vis.delete()
+    if not grid:
+        vis["/Grid"].set_property("visible", False)
+    if not axes:
+        vis["/Axes"].set_property("visible", False)
+    return vis
+
+def load_convex(path: str) -> hppfcl.ConvexBase:
+    shape: hppfcl.ConvexBase
+    loader = hppfcl.MeshLoader()
+    mesh_: hppfcl.BVHModelBase = loader.load(path)
+    mesh_.buildConvexHull(True, "Qt")
+    shape = mesh_.convex
+    return shape
+
+def rgbToHex(color):
+    if len(color) == 4:
+        c = color[:3]
+        opacity = color[3]
+    else:
+        c = color
+        opacity = 1.
+    hex_color = '0x%02x%02x%02x' % (int(c[0] * 255), int(c[1] * 255), int(c[2] * 255))
+    return hex_color, opacity
+
+def renderPoint(vis: meshcat.Visualizer, point: np.ndarray, point_name: str,
+                color=np.ones(4), radius_point=0.001):
+    hex_color, opacity = rgbToHex(color)
+    vis[point_name].set_object(mg.Sphere(radius_point), mg.MeshLambertMaterial(color=hex_color, opacity=opacity))
+    vis[point_name].set_transform(tf.translation_matrix(point))
+
+def renderLine(vis: meshcat.Visualizer, pt1: np.ndarray, pt2: np.ndarray, name: str,
+               linewidth=1, color=np.array([0., 0., 0., 1.])):
+    hex_color, _ = rgbToHex(color)
+    points = np.hstack([pt1.reshape(-1, 1), pt2.reshape(-1, 1)]).astype(np.float32)
+    vis[name].set_object(mg.Line(mg.PointsGeometry(points), mg.MeshBasicMaterial(color=hex_color, linewidth=linewidth)))
+
+RED_COLOR = np.array([1.0, 0., 0., 1.0])
+class AgimusScene:
+    collision_objects: List[hppfcl.CollisionObject]
+    viewer: meshcat.Visualizer
+    mc_shapes: List[meshcat.geometry.Geometry]
+    shape_colors: List[np.ndarray]
+    _colres_idx: int
+
+    def __init__(self):
+        self.viewer = create_visualizer(False, False)
+        self.clear_scene()
+
+    def clear_scene(self):
+        self.mc_shapes = []
+        self.collision_objects = []
+        self.shape_colors = []
+        self._colres_idx = 0
+        self.viewer.delete()
+
+    def register_object(self, shape: hppfcl.ShapeBase, M: pin.SE3, shape_color=np.ones(3)):
+        shape.computeLocalAABB()
+        cobj = hppfcl.CollisionObject(shape, M)
+        self.collision_objects.append(cobj)
+        self.mc_shapes.append(load_primitive(shape))
+        color = np.ones(4)
+        color[:3] = shape_color
+        color[3] = 1
+        self.shape_colors.append(color)
+
+    def render_scene(self):
+        for s, cobj in enumerate(self.collision_objects):
+            M = pin.SE3(cobj.getTransform())
+            shape_name = f"shape_{s}"
+            if isinstance(cobj,(hppfcl.Plane, hppfcl.Halfspace)):
+                T = M
+                T.translation += M.rotation @ (cobj.d * cobj.n)
+                T = T.homogeneous
+            else:
+                T = M.homogeneous
+
+            # Update viewer configuration.
+            self.viewer[shape_name].set_transform(T)
+
+    def clear_renderer(self):
+        self.init_renderer()
+
+    def init_renderer(self):
+        self.viewer.delete()
+        self._colres_idx = 0
+        for s, shape in enumerate(self.mc_shapes):
+            shape_name = f"shape_{s}"
+            self.viewer[shape_name].set_object(shape, meshcat_material(*self.shape_colors[s]))
+
+    def visualize_separation_vector(self, colres: hppfcl.CollisionResult):
+        if colres.isCollision:
+            contact: hppfcl.Contact = colres.getContacts()[0]
+            p1 = contact.getNearestPoint1()
+            p2 = contact.getNearestPoint2()
+
+            name = f"sep_vec_{self._colres_idx}"
+            renderPoint(self.viewer, p1, name + "/p1", RED_COLOR, 0.005)
+            renderPoint(self.viewer, p2, name + "/p2", RED_COLOR, 0.005)
+            renderLine(self.viewer, p1, p2, name + "/sep_vec", 1., RED_COLOR)
+            self._colres_idx += 1
+
+    def delete_separation_vectors(self):
+        for i in range(self._colres_idx):
+            name = f"sep_vec_{i}"
+            self.viewer[name].delete()
+        self._colres_idx = 0
+

@@ -1,164 +1,180 @@
 import hppfcl
 import pinocchio as pin
 import numpy as np
-import meshcat as mc
+import meshcat
 from typing import List
-from .utils_render import loadPrimitive
-
-# TP summary:
-# - Presentation of hppfcl: shapes, collision objects, SE3
-# - Present the structure with a scene, show a simple example with 2 shapes
-# - Actually start with the narrow phase because only 2 shapes
-# - Create a complex scene with walls etc
-# - Show the broadphase
-# - Put everything together to have a kinematic simulator
-
-# BROADPHASE COLLISION MANAGER:
-# How it works:
-# 1 - Create a list of CollisionObject (Q: is it ptr or owned by manager?)
-# 2 - Create a manager and register the shapes
-#     The manager creates a N^2 set which maps every pair of (shapei, shapej) (hash table using the address of the collision objects).
-#     When collide is called, this set is populated with positive results (I guess?)
-# 3 - For each timestep:
-#       - call computeBV on shapes which transforms have been changed
-#       - call update of the tree to recompute the BVH tree
-#       - call collide
-#
-# Q: where are the positive/negative collision results stored?
-
-# @TODO: create a class Scene which has a meshcat renderer and a broadphase
-# manager (which will store the hppfcl objects)
-# Or simply a function which renders a broadphase manager...
-# This renderer will render the shapes but also their aabb.
-# For positive narrow phase collision, it should draw the points and the normals.
-
-# @TODO: create a scene which is a box (defined by 4 hyperplanes) and put shapes inside it.
-# To check if a shape is inside, use a narrowphase and and translate by separating vector if needed.
-# Also register these hyperplanes in the manager.
-
-SHAPE_TYPES = [hppfcl.GEOM_ELLIPSOID,
-               hppfcl.GEOM_CONVEX,
-               hppfcl.GEOM_CYLINDER]
-
-def create_visualizer(grid: bool=False, axes: bool=False) -> mc.Visualizer:
-    vis = mc.Visualizer(zmq_url="tcp://127.0.0.1:6000")
-    vis.delete()
-    if not grid:
-        vis["/Grid"].set_property("visible", False)
-    if not axes:
-        vis["/Axes"].set_property("visible", False)
-    return vis
-
-def load_convex(path: str) -> hppfcl.ConvexBase:
-    shape: hppfcl.ConvexBase
-    loader = hppfcl.MeshLoader()
-    mesh_: hppfcl.BVHModelBase = loader.load(path)
-    mesh_.buildConvexHull(True, "Qt")
-    shape = mesh_.convex
-    return shape
-
-def load_shape(shape_type) -> hppfcl.ShapeBase:
-    shape: hppfcl.ShapeBase = None
-    if shape_type == SHAPE_TYPES[0]:   # Ellipsoids
-        shape = hppfcl.Ellipsoid(np.ones(3)) # @TODO: random
-    elif shape_type == SHAPE_TYPES[1]: # Convex
-        shape = load_convex("./sim2_collision/assets/mesh.stl")
-    elif shape_type == SHAPE_TYPES[2]: # Cylinder
-        shape = hppfcl.Cylinder(1, 2) # @TODO random
-    else:
-        raise Exception("Can't load this shape in this application.")
-    return shape
-
-# def draw_shape(vis: meshcat.Visualizer, shape: hppfcl.ShapeBase,
-#                name: str, M: pin.SE3, color: np.ndarray, render_faces=True):
-#     if isinstance(shape, hppfcl.Ellipsoid):
-#         renderEllipsoid(vis, shape.radii, name, M, color)
-#     if isinstance(shape, hppfcl.Sphere):
-#         renderSphere(vis, shape.radius, name, M, color)
-#     if isinstance(shape, hppfcl.ConvexBase):
-#         renderConvex(vis, shape, name, M, color, render_faces)
-#         pass
-
-# def render_scene(vis: mc.Visualizer, shapes: List[hppfcl.CollisionGeometry]):
-    # for s, shape in enumerate(shapes):
-
-def render_scene(vis: mc.Visualizer, scene: AgimusScene):
-    pass
-
-class AgimusScene:
-    collision_objects: List[hppfcl.CollisionObject]
-    vis: mc.Visualizer
-    mc_shapes: List[mc.geometry.ShapeBase]
-
-    def __init__(self):
-        self.vis = create_visualizer(False, False)
-        pass
-
-    def register_object(self, shape: hppfcl.ShapeBase, M: pin.SE3):
-        self.shapes.append(hppfcl.CollisionObject(shape, M))
-        self.mc_shapes.append(loadPrimitive(shape))
-
-    def render_scene():
-        pass
-
+from utils_render import load_primitive, meshcat_material, load_convex, create_visualizer, AgimusScene
+import time
 
 if __name__ == "__main__":
     # Create some shapes
-    shapes: List[hppfcl.CollisionObject] = []
-    transforms: List[pin.SE3] = []
+    scene = AgimusScene()
+    pin.seed(0)
+    np.random.seed(0)
 
-    sphere = hppfcl.Sphere(0.1)
-    transforms.append(pin.SE3.Random())
-    shapes.append(hppfcl.CollisionObject(sphere, transforms[0]))
+    N = 50
+    for i in range(N):
+        shape = hppfcl.Ellipsoid(0.05, 0.15, 0.2)
+        M = pin.SE3.Random()
+        color = np.random.rand(4)
+        color[3] = 1
+        scene.register_object(shape, M, color)
 
-    cylinder = hppfcl.Cylinder(0.1, 0.2)
-    transforms.append(pin.SE3.Random())
-    shapes.append(hppfcl.CollisionObject(cylinder, transforms[1]))
+        shape = hppfcl.Capsule(0.1, 0.2)
+        M = pin.SE3.Random()
+        color = np.random.rand(4)
+        color[3] = 1
+        scene.register_object(shape, M, color)
 
-    convex = load_convex("./sim2_collision/assets/mesh.stl")
-    transforms.append(pin.SE3.Random())
-    shapes.append(hppfcl.CollisionObject(convex, transforms[2]))
+        shape = load_convex("./assets/mesh.stl")
+        M = pin.SE3.Random()
+        color = np.random.rand(4)
+        color[3] = 1
+        scene.register_object(shape, M, color)
 
-    transforms.append(pin.SE3.Random())
-    shapes.append(hppfcl.CollisionObject(convex, transforms[3]))
+    # Add walls
+    transparent_color = np.ones(4)
+    transparent_color[3] = 0.
+    wall_size = 4.0
+    n_walls = 6
+    # - Lower wall
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., 0., -wall_size])/2
+    # shape = hppfcl.Halfspace(np.array([0.0, 0.0, 1.0]), 0.)
+    shape = hppfcl.Box(wall_size, wall_size, 0.5)
+    scene.register_object(shape, M, transparent_color)
+    # - Upper wall
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., 0., wall_size])/2
+    # shape = hppfcl.Halfspace(np.array([0.0, 0.0, -1.0]), 0.)
+    shape = hppfcl.Box(wall_size, wall_size, 0.5)
+    scene.register_object(shape, M, transparent_color)
+    # - Side walls
+    M = pin.SE3.Identity()
+    M.translation = np.array([-wall_size, 0., 0.])/2
+    # shape = hppfcl.Halfspace(np.array([1.0, 0.0, 0.0]), 0.)
+    shape = hppfcl.Box(0.5, wall_size, wall_size)
+    scene.register_object(shape, M, transparent_color)
+    M = pin.SE3.Identity()
+    M.translation = np.array([wall_size, 0., 0.])/2
+    # shape = hppfcl.Halfspace(np.array([-1.0, 0.0, 0.0]), 0.)
+    shape = hppfcl.Box(0.5, wall_size, wall_size)
+    scene.register_object(shape, M, transparent_color)
+    # - Front walls
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., -wall_size, 0.])/2
+    shape = hppfcl.Halfspace(np.array([0.0, 1.0, 0.0]), 0.)
+    shape = hppfcl.Box(wall_size, 0.5, wall_size)
+    scene.register_object(shape, M, transparent_color)
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., wall_size, 0.])/2
+    # shape = hppfcl.Halfspace(np.array([0.0, -1.0, 0.0]), 0.)
+    shape = hppfcl.Box(wall_size, 0.5, wall_size)
+    scene.register_object(shape, M, transparent_color)
 
-    # @TODO Add walls
-    walls: List[hppfcl.Box]
+    # Initialize scene renderer
+    scene.init_renderer()
 
-    # Create a manager and register objects
-    manager = hppfcl.DynamicAABBTreeCollisionManager()
-    for shape in shapes:
-        manager.registerObject(shape)
-    # @TODO Register the walls
+    # render the scene
+    scene.render_scene()
 
-    num_possible_collision_pairs = (int)(len(shapes)*(len(shapes) - 1)/2)
+    # SIMPLE KINEMATIC SIMULATOR
+    num_collision_objects = len(scene.collision_objects)
+    print(num_collision_objects)
+    num_possible_collision_pairs = (int)(len(scene.collision_objects)*(len(scene.collision_objects) - 1)/2)
     print("Number of possible collision pairs: ", num_possible_collision_pairs)
-    callback = hppfcl.CollisionCallBackCollect(num_possible_collision_pairs)
+    # A callback function which will collect broad phase collisions
+
+    # Starting velocities of each shape
+    velocities = []
+    for i in range(num_collision_objects - n_walls):
+        v = np.random.rand(6) * 0.25
+        # v = np.zeros(6)
+        # v[2] = -1.0 * 0.1
+        # v[3:] = np.zeros(3)
+        velocities.append(v)
+    # Walls velocities
+    for i in range(n_walls):
+        velocities.append(np.zeros(6))
 
     # Before calling any broad phase check, need to update the aabbs of shapes
     # that have transformed
-    for shape in shapes:
+
+    # Collision request and result needed for the narrow phase
+    colreq = hppfcl.CollisionRequest()
+    colres = hppfcl.CollisionResult()
+    # Number of time steps
+    input()
+    T = 1000
+    dt = 0.05
+    callback = hppfcl.CollisionCallBackCollect(num_possible_collision_pairs)
+    start = time.time()
+    # Create a manager and register objects
+    # manager = hppfcl.NaiveCollisionManager()
+    manager = hppfcl.DynamicAABBTreeCollisionManager()
+    # manager = hppfcl.SaPCollisionManager()
+    for shape in scene.collision_objects:
         shape.computeAABB()
+        manager.registerObject(shape)
+    for t in range(T):
+        # Render the current scene
+        scene.render_scene()
 
-    # Actual broad phase check
-    # 1 - update the internal representation of the AABB tree
-    manager.update()
-    # 2 - run the recursive aabbs collision check
-    manager.collide(callback)
-    if callback.isPairInCollision(shapes[0], shapes[1]):
-        pass
-    for i, shape1 in enumerate(shapes):
-        for j, shape2 in enumerate(shapes):
-            print(f"Are shapes {i, j} in broad phase collision? ", callback.isPairInCollision(shapes[0], shapes[1]))
+        # Actual broad phase check
+        # 1 - update the internal representation of the AABB tree
+        # manager.clear()
+        for shape in scene.collision_objects:
+            shape.computeAABB()
+            # manager.registerObject(shape)
+        manager.update()
 
-    # Create meshcat visualizer
-    vis: mc.Visualizer = create_visualizer(False, False)
+        # 2 - run the recursive aabbs collision check
+        callback.init()
+        # print("Iteration ", t)
+        manager.collide(callback)
+        # print("Broad phase done.")
+        for i in range(0, num_collision_objects-1):
+            for j in range(i+1, num_collision_objects):
+                if i < num_collision_objects - n_walls and j < num_collision_objects - n_walls:
+                    shape1 = scene.collision_objects[i]
+                    shape2 = scene.collision_objects[j]
+                    # print("Before callback check")
+                    # if callback.exist(shape1, shape2):
+                    if callback.exist(shape1, shape2):
+                        # Launch the narrow phase
+                        colres.clear()
+                        is_colliding = hppfcl.collide(shape1, shape2, colreq, colres)
+                        if (is_colliding):
+                            v1 = velocities[i]
+                            v2 = velocities[j]
 
-    # Very simple kinematic simulation
-    # v: np.ndarray = np.random.rand(6)
-    # dt: float = 0.01
-    # for i in range(100):
-    #     M1 = M1 * pin.exp6(v * dt)
-    #     # print(M1)
-    #     shape.setTransform(M1)
+                            contact: hppfcl.Contact = colres.getContacts()[0]
+
+                            new_v1 = np.zeros(6)
+                            new_v1[3:] = velocities[i][3:]
+                            new_v1[:3] = - np.linalg.norm(v1[:3]) * contact.normal
+
+                            new_v2 = np.zeros(6)
+                            new_v2[3:] = velocities[j][3:]
+                            new_v2[:3] = np.linalg.norm(v2[:3]) * contact.normal
+
+                            if i < num_collision_objects - 6:
+                                velocities[i] = new_v1
+                            if j < num_collision_objects - 6:
+                                velocities[j] = new_v2
+
+        for i in range(num_collision_objects - n_walls):
+            M = scene.collision_objects[i].getTransform()
+            v1 = np.zeros(6)
+            v2 = np.zeros(6)
+            v1[:3] = velocities[i][:3]
+            v2[3:] = velocities[i][3:]
+            M = pin.exp6(v1*dt) * M * pin.exp6(v2*dt)
+            scene.collision_objects[i].setTransform(M)
+        input()
+
+    print("Simulation done")
+    print(time.time() - start)
+    input()
+
 
