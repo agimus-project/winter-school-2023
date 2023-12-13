@@ -10,6 +10,7 @@ In this winter school, we will cover three main different topics:
 
 - [Simulation](./simulation)
     - [Simulation #1: Rigid body dynamics](./simulation/sim1_rigid_body/), [slides](./simulation/slides/sim1.pdf)
+    - [Simulation #2: Collision detection](./simulation/sim2_collision), [slides](./simulation/slides/sim2.pdf)
 - [Optimal control](./ocp/)
 - [Motion planning]
 
