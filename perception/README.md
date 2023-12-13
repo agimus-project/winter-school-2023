@@ -26,15 +26,11 @@ The course is based on following publications:
 
 ## Installation
 
-To make code easily replicable on laptops, we will install CPU version only. The CPU version is however slow, see [HappyPose](https://github.com/agimus-project/happypose) for installation of GPU version for you future projects.
-
-```bash
-# Create Conda environment
-conda create -n aws_perception python=3.9
-conda activate aws_perception
-
-# HappyPose installation
-pip install "git+https://github.com/agimus-project/happypose.git#egg=happypose[cpu]" --extra-index-url https://download.pytorch.org/whl/cpu
+It is recommended to use docker, to activate the shell, run (replace variables in capital with your paths):
+```
+pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v $PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-2
+/opt/miniconda3/bin/conda init && bash
+conda activate /aws2
 ```
 
 ### Downloading HappyPose data
@@ -42,9 +38,11 @@ pip install "git+https://github.com/agimus-project/happypose.git#egg=happypose[c
 Object pose estimators are based on pre-trained networks and the dataset of objects.
 To be able to create/run the tutorial code you need to download both with:
 ```
+cd school/perception
+export HAPPYPOSE_DATA_DIR=/happypose_data
 python -m happypose.toolbox.utils.download --cosypose_models detector-bop-ycbv-pbr--970850  coarse-bop-ycbv-pbr--724183 refiner-bop-ycbv-pbr--604090
 python -m happypose.toolbox.utils.download --megapose_models
-python -m happypose.toolbox.utils.download - -ycbv_compat_models
+python -m happypose.toolbox.utils.download --ycbv_compat_models
 ```
 
 ### Downloading the tutorial data

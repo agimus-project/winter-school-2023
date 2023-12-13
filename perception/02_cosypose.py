@@ -17,9 +17,9 @@ import numpy as np
 
 from happypose.toolbox.inference.types import ObservationTensor
 
-from perception.aws_cosypose import AWSCosyPose
-from perception.loading_utils import load_rgb_images_for_scene, load_camera_data_color
-from perception.render_utils import render_overlay, draw_bounding_boxes
+from aws_cosypose import AWSCosyPose
+from loading_utils import load_rgb_images_for_scene, load_camera_data_color
+from render_utils import render_overlay, draw_bounding_boxes
 
 if __name__ == "__main__":
     camera_data = load_camera_data_color()
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     detector = AWSCosyPose.load_detector()
     detections = detector.get_detections(observation=observation, detection_th=0.9)
 
-    # filterdetection based on object id interested in, i.e. object_id = 14, the cup
+    # filter detection based on object id interested in, i.e. object_id = 14, the cup
     detections = detections[np.where(detections.infos["label"] == "ycbv-obj_000014")]
 
     pose_estimator = AWSCosyPose.load_pose_estimator()
@@ -48,7 +48,16 @@ if __name__ == "__main__":
     output_image = render_overlay(image, renderer, predictions=preds)
     output_image = draw_bounding_boxes(output_image, detections)
 
-    # todo: visualize all predictions, after coarse, after 1 refiner, ...
+    # todo: visualize coarse prediction too
+    # Hints:
+    #   preds_extra.keys()
+    #       Out[1]: dict_keys(['coarse', 'refiner_all_hypotheses', 'refiner',
+    #       'timing_str', 'time'])
+    #   preds_extra['coarse'].keys()
+    #       Out[2]: dict_keys(['preds', 'data'])
+    #   preds_extra['coarse']['data'].keys()
+    #       Out[3]: dict_keys(['n_iterations', 'outputs', 'model_time', 'time'])
+    #           preds_extra['refiner']
 
     # cv2.imwrite("/tmp/cosypose.png", cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR))
     cv2.imshow("Poses overlay", cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR))

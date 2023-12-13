@@ -18,7 +18,7 @@ def get_perception_data_dir(data_dir: Path | None = None) -> Path:
     not specified, assume default location."""
     if data_dir is None:
         data_dir = Path(__file__).parent / "data"
-    path_camera = data_dir / "cam_d435_640_color.json"
+    path_camera = data_dir / "cam_d435_640_happypose.json"
     scene1_dir = data_dir / "scene1_obj_14"
     assert (
         path_camera.exists() and scene1_dir.exists()
@@ -29,7 +29,7 @@ def get_perception_data_dir(data_dir: Path | None = None) -> Path:
 def load_camera_data_color(data_dir: Path | None = None) -> CameraData:
     """Load json camera data from the data file."""
     data_dir = get_perception_data_dir(data_dir)
-    path_camera = data_dir / "cam_d435_640_color.json"
+    path_camera = data_dir / "cam_d435_640_happypose.json"
     return CameraData.from_json(path_camera.read_text())
 
 

@@ -14,8 +14,8 @@
 import cv2
 from happypose.toolbox.inference.types import ObservationTensor
 
-from perception.aws_cosypose import AWSCosyPose
-from perception.loading_utils import load_rgb_images_for_scene, load_camera_data_color
+from aws_cosypose import AWSCosyPose
+from loading_utils import load_rgb_images_for_scene, load_camera_data_color
 
 if __name__ == "__main__":
     camera_data = load_camera_data_color()

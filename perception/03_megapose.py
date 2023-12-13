@@ -20,9 +20,9 @@ from happypose.toolbox.datasets.bop_object_datasets import BOPObjectDataset
 from happypose.toolbox.inference.types import ObservationTensor
 from happypose.toolbox.utils.load_model import NAMED_MODELS, load_named_model
 
-from perception.aws_cosypose import AWSCosyPose
-from perception.loading_utils import load_rgb_images_for_scene, load_camera_data_color
-from perception.render_utils import render_overlay, draw_bounding_boxes
+from aws_cosypose import AWSCosyPose
+from loading_utils import load_rgb_images_for_scene, load_camera_data_color
+from render_utils import render_overlay, draw_bounding_boxes
 
 if __name__ == "__main__":
     camera_data = load_camera_data_color()
