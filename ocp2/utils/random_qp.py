@@ -95,12 +95,21 @@ class Test(unittest.TestCase):
 
     def test_nolicq(self):
         print(self.__class__.__name__)
-        qp = generate_convex_qp_nolicq(4, 4, 3, 2)
+        n = 4
+        nc = 3
+        nr = 2
+        qp = generate_convex_qp_nolicq(n, 4, nc, nr)
         kkt, _ = _assemble_kkt_system(qp)
         print(kkt)
         d = npla.det(kkt)
         print("det:", d)
         self.assertAlmostEqual(d, 0.)
+        eigv = npla.eigvalsh(kkt)
+        eigv.shape[0] == n + nc + nr
+        print(eigv)
+        numzero = np.isclose(eigv, 0.).sum()
+        print("Got {} zeros".format(numzero))
+        self.assertEqual(numzero, nr)
 
 
 if __name__ == "__main__":
