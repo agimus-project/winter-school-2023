@@ -1,0 +1,8 @@
+numiters = 30
+yi = yinit
+errs_ = []
+
+for t in range(numiters):
+    xi, yi, perr, derr = solve_qp_prox_one_iter(test_qp, yi, mu=0.01)  # play with mu?
+    errs_.append((perr, derr))
+    print(errs_[-1])

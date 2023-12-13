@@ -1,0 +1,10 @@
+# Assemble the KKT matrix
+K = np.block([[qp.Q, qp.A.T], [qp.A, np.zeros([nc, nc])]])
+# Assemble the corresponding vector
+k = np.concatenate([-qp.q, -qp.b])
+
+# Solve the QP by inverting the QP
+primal_dual = npla.inv(K) @ k
+# Extact primal and dual optimal from the KKT inversion
+x_opt = primal_dual[:nx]
+mult_opt = primal_dual[nx:]

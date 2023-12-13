@@ -1,0 +1,14 @@
+for qp in [
+    qp1_strict,
+    qp2_nostrict,
+    qp3_nolicq,
+    qp4_strict_nolicq,
+    qp5_overconstrained,
+]:
+    try:
+        print("====")
+        xopt, yopt, perr, derr = solve_qp_inv_kkt(qp)
+        print("primal error = {}".format(perr))
+        print("dual   error = {}".format(derr))
+    except Exception as e:
+        print("Got an exception: {}".format(e))

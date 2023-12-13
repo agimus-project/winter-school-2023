@@ -1,0 +1,5 @@
+qp1_strict = generate_convex_eqp(4, 4, 2, check_strictly_convex=True)
+qp2_nostrict = generate_convex_eqp(4, 2, 2)
+qp3_nolicq = generate_convex_qp_nolicq(4, 2, 2, 1)
+qp4_strict_nolicq = generate_convex_qp_nolicq(4, 5, 2, 1)
+qp5_overconstrained = generate_convex_eqp(4, 5, 5)

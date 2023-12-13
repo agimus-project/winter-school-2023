@@ -1,0 +1,13 @@
+qp = qp1_strict
+mu_vals = [0.1, 0.01, 1e-4, 1e-6]
+epsilon = 1e-14
+
+plt.subplot(111)
+for mu in mu_vals:
+    _, _, perrs, derrs = solve_qp_prox(qp, np.zeros(qp.b.size), mu, epsilon=epsilon)
+    perrs = np.asarray(perrs)
+    plt.plot(perrs, label="$\\mu = {:.2e}$".format(mu), ls='--')
+
+plt.yscale("log")
+plt.legend()
+plt.tight_layout()

@@ -1,0 +1,3 @@
+test_qp = generate_convex_eqp(5, 4, 4)
+yinit = np.zeros(4)
+solve_qp_prox_one_iter(test_qp, yinit)

@@ -1,0 +1,4 @@
+nx = 3
+nc = 1
+
+qp = generate_convex_eqp(nx, nx, nc)

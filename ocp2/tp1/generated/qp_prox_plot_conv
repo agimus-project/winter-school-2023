@@ -1,0 +1,12 @@
+errs_ = np.asarray(errs_)
+plt.subplot(121)
+# primal error
+plt.plot(errs_[:, 0], ls="--")
+plt.yscale("log")
+plt.title("Primal error $\| Ax - b \|$")
+
+plt.subplot(122)
+plt.plot(errs_[:, 1], ls="--")
+plt.yscale("log")
+plt.title("Dual error $\| Qx + q + A^\\top y \|$")
+plt.tight_layout()

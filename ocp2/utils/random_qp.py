@@ -7,14 +7,17 @@ import unittest
 QP = namedtuple("QP", ["Q", "A", "q", "b"])
 
 
-
 def wishart(n, p):
     """Generate a random symmetric positive (semi)definite matrix.
-    
+
     Definite if p>=n.
     """
     root = np.random.randn(n, p)
     return root @ root.T
+
+
+def infNorm(x):
+    return npla.norm(x.flat)
 
 
 def gaussian_orthogonal_ensemble(n):
@@ -35,9 +38,16 @@ def _assemble_kkt_system(qp: QP):
     return mat, r
 
 
-def generate_convex_eqp(n, p, nc, check_strictly_convex = False):
-    """Generate the parameters of a convex equality-QP.
-    
+def generate_convex_eqp(n, p, nc, check_strictly_convex=False):
+    """Generate the parameters of a convex equality-QP with `n` variables and
+    `nc` constraints.
+    The :math:`Q` matrix will be (n,n) matrix drawn from the Wishart distribution
+    with `p` degrees of freedom.
+
+    See: https://en.wikipedia.org/wiki/Wishart_distribution
+
+    Usually, having :math:`n \leq p` will guarantee that :math:`Q` is positive definite.
+
     The check_strictly_convex flag will check if the problem is strictly convex.
     """
     if check_strictly_convex:
@@ -52,8 +62,7 @@ def generate_convex_eqp(n, p, nc, check_strictly_convex = False):
 
 
 def generate_convex_qp_nolicq(n, p, nc, nredundant=1):
-    """Generate a convex QP which lacks LICQ conditions, by making some row constraints redundant.
-    """
+    """Generate a convex QP which lacks LICQ conditions, by making some row constraints redundant."""
 
     qp = generate_convex_eqp(n, p, nc, False)
 
@@ -79,7 +88,6 @@ def generate_convex_qp_nolicq(n, p, nc, nredundant=1):
     return QP(qp.Q, Anew, qp.q, bnew)
 
 
-
 class Test(unittest.TestCase):
     def test_strict_convex(self):
         print(self.__class__.__name__)
@@ -87,9 +95,9 @@ class Test(unittest.TestCase):
         kkt, _ = _assemble_kkt_system(qp)
         eigv = npla.eigvalsh(kkt)
         print("eigvals:", eigv)
-        self.assertGreater(np.min(np.abs(eigv)), 0.)
-        numpos = np.sum(eigv > 0.)
-        numneg = np.sum(eigv < 0.)
+        self.assertGreater(np.min(np.abs(eigv)), 0.0)
+        numpos = np.sum(eigv > 0.0)
+        numneg = np.sum(eigv < 0.0)
         self.assertEqual(numpos, 4)
         self.assertEqual(numneg, 2)
 
@@ -103,11 +111,11 @@ class Test(unittest.TestCase):
         print(kkt)
         d = npla.det(kkt)
         print("det:", d)
-        self.assertAlmostEqual(d, 0.)
+        self.assertAlmostEqual(d, 0.0)
         eigv = npla.eigvalsh(kkt)
         eigv.shape[0] == n + nc + nr
         print(eigv)
-        numzero = np.isclose(eigv, 0.).sum()
+        numzero = np.isclose(eigv, 0.0).sum()
         print("Got {} zeros".format(numzero))
         self.assertEqual(numzero, nr)
 
