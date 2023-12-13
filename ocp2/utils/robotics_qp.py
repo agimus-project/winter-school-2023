@@ -1,5 +1,5 @@
 import numpy as np
-from random_qp import QP
+from .random_qp import QP
 
 def load_crocoddyl_qp():
     '''
