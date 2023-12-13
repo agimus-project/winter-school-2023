@@ -30,7 +30,7 @@ class LocalTest(unittest.TestCase):
     def test_logs(self): 
         try:
             from quadprog import solve_qp
-            x,f,_,_,mult,_ = solve_qp(Q,-q,A.T,-b)
+            x,f,_,_,mult,_ = solve_qp(qp.Q,-qp.q,qp.A.T,-qp.b)
             assert( np.allclose(x_opt,x) )
             assert( np.allclose(mult_opt,-mult) )
         except ModuleNotFoundError:
