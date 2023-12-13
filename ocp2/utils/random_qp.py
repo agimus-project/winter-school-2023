@@ -82,12 +82,19 @@ def generate_convex_qp_nolicq(n, p, nc, nredundant=1):
 
 class Test(unittest.TestCase):
     def test_strict_convex(self):
+        print(self.__class__.__name__)
         qp = generate_convex_eqp(4, 5, 2, True)
         kkt, _ = _assemble_kkt_system(qp)
         eigv = npla.eigvalsh(kkt)
-        self.assertTrue(np.all(eigv > 0.))
+        print("eigvals:", eigv)
+        self.assertGreater(np.min(np.abs(eigv)), 0.)
+        numpos = np.sum(eigv > 0.)
+        numneg = np.sum(eigv < 0.)
+        self.assertEqual(numpos, 4)
+        self.assertEqual(numneg, 2)
 
     def test_nolicq(self):
+        print(self.__class__.__name__)
         qp = generate_convex_qp_nolicq(4, 4, 3, 2)
         kkt, _ = _assemble_kkt_system(qp)
         print(kkt)
@@ -97,4 +104,5 @@ class Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    Test().test_strict_convex()
     Test().test_nolicq()
