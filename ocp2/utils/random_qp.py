@@ -1,4 +1,11 @@
 import numpy as np
+import numpy.linalg as npla
+from scipy.stats import ortho_group
+from collections import namedtuple
+import unittest
+
+QP = namedtuple("QP", ["Q", "q", "A", "b"])
+
 
 
 def wishart(n, p):
