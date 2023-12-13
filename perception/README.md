@@ -103,7 +103,22 @@ A few experiments starting from here:
 `scale_r` values in the script. You should observe a trade-off between tracking latency and stability.
 
 #### Object tracking from webcam stream
+<<<<<<< HEAD
 We will now track the YCBV mug (obj_000014) using a webcam video stream. Start the example script, hold your plastic cup so that it matched approximately the render and start tracking by pressing `x`. Press `d` to reinitialize the tracker pose.
+=======
+We will now track the YCBV mug (obj_000014) using a webcam video stream. Start the script:
+
+`python 05_tracker_webcam.py --use_region -b obj_000014 -m data`  
+
+Press `d` to initialize the object pose, align your cup with the silhouette rendered on the screen and press `x` to start tracking.  
+
+You can again observe the effect of tikhonov regularization on tracking stability and latency. 
+
+Possible experiments:
+- Same as `04_tracker_image_dir.py`, except for depth
+
+### Estimate and Track pipeline
+>>>>>>> d217fb94295b2e7f357668e040dacd45df128624
 
 `python 05_tracker_webcam.py --use_region -b obj_000014 -m data`  
 
