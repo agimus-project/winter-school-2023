@@ -108,7 +108,7 @@ Try to modify the number of correlation/update steps.
 #### Object tracking from webcam stream
 We will now track the YCBV mug (obj_000014) using a webcam video stream. Start the script:
 
-`python 05_tracker_webcam.py --use_region -b obj_000014 -m data/aws_tracker_videos`  
+`python 05_tracker_webcam.py --use_region -b obj_000014 -m data`  
 
 Press `d` to initialize the object pose, align your cup with the silhouette rendered on the screen and press `x` to start tracking.  
 
