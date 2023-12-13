@@ -237,7 +237,7 @@ class AgimusScene:
         self._colres_idx = 0
         self.viewer.delete()
 
-    def register_object(self, shape: hppfcl.ShapeBase, M: pin.SE3, shape_color=np.ones(3)):
+    def register_object(self, shape: hppfcl.ShapeBase, M: pin.SE3, shape_color=np.ones(3), transparent=False):
         shape.computeLocalAABB()
         cobj = hppfcl.CollisionObject(shape, M)
         self.collision_objects.append(cobj)
@@ -245,6 +245,8 @@ class AgimusScene:
         color = np.ones(4)
         color[:3] = shape_color
         color[3] = 1
+        if transparent:
+            color[3] = 0.2
         self.shape_colors.append(color)
 
     def render_scene(self):
@@ -289,3 +291,76 @@ class AgimusScene:
             self.viewer[name].delete()
         self._colres_idx = 0
 
+def create_complex_scene():
+    # Create some shapes
+    scene = AgimusScene()
+    shapes = []
+    transforms = []
+    pin.seed(0)
+    np.random.seed(0)
+
+    N = 25
+    for _ in range(N):
+        shape = hppfcl.Ellipsoid(0.05, 0.15, 0.2)
+        shapes.append(shape)
+        shape = hppfcl.Capsule(0.1, 0.2)
+        shapes.append(shape)
+        shape = load_convex("./assets/mesh.stl")
+        shapes.append(shape)
+
+    for s in range(len(shapes)):
+        M = pin.SE3.Random()
+        transforms.append(M)
+        color = np.random.rand(3)
+        scene.register_object(shapes[s], M, color)
+
+    # Add walls
+    walls_color = np.ones(3)
+    wall_size = 4.0
+
+    # X-axis
+    M = pin.SE3.Identity()
+    M.translation = np.array([-wall_size, 0., 0.])/2
+    transforms.append(M)
+    shape = hppfcl.Box(0.5, wall_size, wall_size)
+    shapes.append(shape)
+    scene.register_object(shapes[-1], M, walls_color, True)
+
+    M = pin.SE3.Identity()
+    M.translation = np.array([wall_size, 0., 0.])/2
+    transforms.append(M)
+    shape = hppfcl.Box(0.5, wall_size, wall_size)
+    shapes.append(shape)
+    scene.register_object(shapes[-1], M, walls_color, True)
+
+    # Y-axis
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., -wall_size, 0.])/2
+    transforms.append(M)
+    shape = hppfcl.Box(wall_size, 0.5, wall_size)
+    shapes.append(shape)
+    scene.register_object(shapes[-1], M, walls_color, True)
+
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., wall_size, 0.])/2
+    transforms.append(M)
+    shape = hppfcl.Box(wall_size, 0.5, wall_size)
+    shapes.append(shape)
+    scene.register_object(shapes[-1], M, walls_color, True)
+
+    # Y-axis
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., 0., -wall_size])/2
+    transforms.append(M)
+    shape = hppfcl.Box(wall_size, wall_size, 0.5)
+    shapes.append(shape)
+    scene.register_object(shapes[-1], M, walls_color, True)
+
+    M = pin.SE3.Identity()
+    M.translation = np.array([0., 0., wall_size])/2
+    transforms.append(M)
+    shape = hppfcl.Box(wall_size, wall_size, 0.5)
+    shapes.append(shape)
+    scene.register_object(shapes[-1], M, walls_color, True)
+
+    return shapes, transforms, scene
