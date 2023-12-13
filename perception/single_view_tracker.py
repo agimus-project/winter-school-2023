@@ -1,4 +1,4 @@
-import cv2
+import pinocchio as pin
 import numpy as np
 import quaternion
 from pathlib import Path
@@ -45,7 +45,6 @@ def setup_single_object_tracker(args: argparse.Namespace, cam_intrinsics: dict):
         scale_geometry
         tmp_dir
         use_region
-        use_texture
     :param cam_intrinsics: dict containing camera intrinsics
     """
 
@@ -54,9 +53,7 @@ def setup_single_object_tracker(args: argparse.Namespace, cam_intrinsics: dict):
         args.use_depth = False
     if 'use_depth_viewer' not in args:
         args.use_depth_viewer = False
-    if 'measure_occlusions' not in args:
-        args.measure_occlusions = False
-    
+
     tmp_dir = Path(args.tmp_dir)
     tmp_dir.mkdir(exist_ok=True)
 
@@ -105,8 +102,6 @@ def setup_single_object_tracker(args: argparse.Namespace, cam_intrinsics: dict):
         region_model_path = tmp_dir / (args.body_name + '_region_model.bin')
         region_model = pym3t.RegionModel(args.body_name + '_region_model', body, region_model_path.as_posix())
         region_modality = pym3t.RegionModality(args.body_name + '_region_modality', body, color_camera, region_model)
-        if args.measure_occlusions and args.use_depth:
-            region_modality.MeasureOcclusions(depth_camera)
         link.AddModality(region_modality)
 
     # Depth Modality
@@ -114,19 +109,7 @@ def setup_single_object_tracker(args: argparse.Namespace, cam_intrinsics: dict):
         depth_model_path = tmp_dir / (args.body_name + '_depth_model.bin')
         depth_model = pym3t.DepthModel(args.body_name + '_depth_model', body, depth_model_path.as_posix())
         depth_modality = pym3t.DepthModality(args.body_name + '_depth_modality', body, depth_camera, depth_model)
-        if args.measure_occlusions and args.use_depth:
-            depth_modality.MeasureOcclusions()
         link.AddModality(depth_modality)
-
-    # Texture Modality
-    if args.use_texture:
-        # Texture modality does not require a model contrary to region and depth (for sparse view precomputations)
-        color_silhouette_renderer = pym3t.FocusedSilhouetteRenderer('color_silhouette_renderer', renderer_geometry, color_camera)
-        color_silhouette_renderer.AddReferencedBody(body)
-        texture_modality = pym3t.TextureModality(args.body_name + '_texture_modality', body, color_camera, color_silhouette_renderer)
-        if args.measure_occlusions and args.use_depth:
-            texture_modality.MeasureOcclusions(depth_camera)
-        link.AddModality(texture_modality)
 
     optimizer = pym3t.Optimizer(args.body_name+'_optimizer', link)
 
@@ -145,15 +128,17 @@ def setup_single_object_tracker(args: argparse.Namespace, cam_intrinsics: dict):
 def ExecuteTrackingStepSingleObject(tracker: pym3t.Tracker, link: pym3t.Link, body: pym3t.Body, 
                                     iteration: int, tikhonov_trans: float, tikhonov_rot: float,  
                                     n_corr_iteration=5, n_update_iterations=2):
+    
+    tikho_diag = np.concatenate([3*[tikhonov_rot], 3*[tikhonov_trans]])
+    
     """
-    Reproducing the coarse to fine optimization procedure.
+    Reproducing the coarse to fine Newton steps.
      
     Meant for educational purpose only, tracker.ExecuteTrackingStep should used instead for practical applications.
     - CalculateCorrespondences: 
         - RegionModality: get correspondance lines by projecting contour points and normals to camera image and computing
                           likelihood of background/foreground belonging for each pixel
         - DepthModality: ICP like with point-2-plane error metric
-        - TextureModality: detect feature/descriptor in new image and match them with previous keyframe
 
     n_corr_iterations: number of times new correspondences are established
     n_update_iterations: number of times the pose is updated for each correspondence iteration
@@ -164,7 +149,6 @@ def ExecuteTrackingStepSingleObject(tracker: pym3t.Tracker, link: pym3t.Link, bo
         - RegionModality: get correspondance lines by projecting contour points and normals to camera image and computing
                           likelihood that each pixel belongs to background/foreground
         - DepthModality: ICP like with point-2-plane error metric
-        - TextureModality: detect feature/descriptor in new image and match them with previous keyframe
         """
 
         tracker.CalculateCorrespondences(iteration, corr_iteration)
@@ -174,7 +158,7 @@ def ExecuteTrackingStepSingleObject(tracker: pym3t.Tracker, link: pym3t.Link, bo
             tracker.CalculateGradientAndHessian(iteration, corr_iteration, update_iteration)
 
             ###################
-            # Agregate gradient and hessian for each modality and store in link
+            # Aggregate gradient and hessian for each modality and store in link
             # Unconventionally, hessian and gradients are implemented as derivatives of the log-likelihood
             # -> minus sign to minimize the negative log-likelihood 
             H = np.zeros((6,6))
@@ -184,21 +168,18 @@ def ExecuteTrackingStepSingleObject(tracker: pym3t.Tracker, link: pym3t.Link, bo
                 g -= modality.gradient
 
             # Solve normal equation with tikhonov regularization
-            # Delta pose is defined using SO(3)xR3 representation (angle axis, translation)
-            # expressed in the local body frame (-> right multiplication)
-            tikho_vec = np.concatenate([3*[tikhonov_rot], 3*[tikhonov_trans]])
-            delta_pose = np.linalg.solve(H + np.diag(tikho_vec), -g)
+            Hreg = H + np.diag(tikho_diag)
+            delta_pose = np.linalg.solve(Hreg,-g)
             
-            # Update link pose
+            # The pose update is defined using SO(3)xR3 representation (angle axis, translation)
+            # expressed in the local body frame (-> right multiplication)
             delta_theta, delta_posi = delta_pose[:3], delta_pose[3:]
-            delta_R = cv2.Rodrigues(delta_theta)[0]  # SO(3) exponential map
+            delta_R = pin.exp3(delta_theta)  # SO(3) exponential map
             pose_variation = np.eye(4)
             pose_variation[:3,:3] = delta_R
             pose_variation[:3,3] = delta_posi
             body.body2world_pose = body.body2world_pose @ pose_variation
             ###################
 
-    # Update modalities states 
-    # - region modality: update color histograms
-    # - texture modality: update keyframe if enough rotation, render silhouette+depth and update tracked features
+    # Update modalities states (color histogram statistics)
     tracker.CalculateResults(iteration)
