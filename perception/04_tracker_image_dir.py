@@ -112,7 +112,7 @@ for i, (img_bgr, img_depth) in enumerate(zip(img_bgr_lst, img_depth_lst)):
     #----------------------
 	# TODO: uncomment/comment to replace by custom implementation 
     tracker.ExecuteTrackingStep(i)
-    # ExecuteTrackingStepSingleObject(tracker, link, body, i, tikhonov_trans, tikhonov_rot)
+    # ExecuteTrackingStepSingleObject(tracker, link, body, i, optimizer.tikhonov_parameter_translation, optimizer.tikhonov_parameter_rotation)
     print('ExecuteTrackingCycle (ms)', 1000*(time.time() - t))
     print('body.body2world_pose\n',body.body2world_pose)
     #----------------------

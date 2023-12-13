@@ -91,7 +91,7 @@ We wrote a python wrapper for ease of experimentation, follow installation instr
 #### Object tracking on recorded sequences
 
 Run example script:  
-`python run_tracker_image_dir_example.py --use_region -b obj_000014 -m data/aws_tracker_videos -i data/aws_tracker_videos/scene1_obj_14 -c data/aws_tracker_videos/cam_d435_640.yaml -s`
+`python 04_tracker_image_dir.py --use_region -b obj_000014 -m data -i data/scene1_obj_14 -c data/cam_d435_640.yaml -s`
 
 
 Possible experiments:
@@ -108,14 +108,14 @@ Try to modify the number of correlation/update steps.
 #### Object tracking from webcam stream
 We will now track the YCBV mug (obj_000014) using a webcam video stream. Start the script:
 
-`python run_tracker_webcam_example.py --use_region -b obj_000014 -m data/aws_tracker_videos`  
+`python 05_tracker_webcam.py --use_region -b obj_000014 -m data/aws_tracker_videos`  
 
 Press `d` to initialize the object pose, align your cup with the silhouette rendered on the screen and press `x` to start tracking.  
 
 You can again observe the effect of tikhonov regularization on tracking stability and latency. 
 
 Possible experiments:
-- Same as `run_tracker_image_dir_example`, except for depth
+- Same as `04_tracker_image_dir.py`, except for depth
 
 ### Estimate and Track pipeline
 
@@ -128,4 +128,4 @@ For camera, we 3D printed the cup object from YCBV dataset, if you want to repli
 
 In case of any question do not hesitate to contact us:
 - Vladimir Petrik, vladimir.petrik@cvut.cz, https://petrikvladimir.github.io/
-- Mederic Fourmy, mederic.fourmy@cvut.cz, `TBD`
+- Mederic Fourmy, mederic.fourmy@cvut.cz
