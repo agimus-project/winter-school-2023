@@ -174,6 +174,7 @@ def load_tsid_qp():
     assert(na-ntau==6)
     assert(np.all(A[-nf:,na:]==0))
     assert(Q.shape==(nx,nx))
+<<<<<<< Updated upstream
     assert(q.shape[0]==nx)
     assert(A.shape==(na+nf,nx))
     assert(b.shape[0]==na+nf)
@@ -181,4 +182,14 @@ def load_tsid_qp():
     assert(np.all(Q[:,na:]==0))
    
     return QP(Q,q,A,b)
+=======
+    assert(q.shape==(nx,))
+    assert(A.shape==(na+nf,nx))
+    assert(b.shape==(na+nf,))
+    assert(np.all(Q[na:,:]==0))
+    assert(np.all(Q[:,na:]==0))
+
+    print(q.shape)
+    return QP(Q,A,q,b)
+>>>>>>> Stashed changes
 
