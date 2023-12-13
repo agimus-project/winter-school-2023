@@ -84,7 +84,8 @@ class Test(unittest.TestCase):
     def test_strict_convex(self):
         qp = generate_convex_eqp(4, 5, 2, True)
         kkt, _ = __assemble_kkt_system(qp)
-        d = npla.det(kkt)
+        eigv = npla.eigvalsh(kkt)
+        self.assertTrue(np.all(eigv > 0.))
 
     def test_nolicq(self):
         qp = generate_convex_qp_nolicq(4, 4, 3, 2)
