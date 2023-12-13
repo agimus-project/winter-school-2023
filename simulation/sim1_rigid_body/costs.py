@@ -13,7 +13,7 @@ class Cost3d:
         self.rmodel = rmodel
         self.rdata = rdata
         self.ptarget = ptarget if ptarget is not None else  np.array([0.5, 0.1, 0.27])
-        self.frame_index = frame_index if frame_index is not None else robot.model.nframes - 1
+        self.frame_index = frame_index if frame_index is not None else rmodel.nframes - 1
         self.viz = viz
 
     def residual(self, q):
@@ -50,7 +50,7 @@ class Cost6d:
         self.rdata = rdata
         self.Mtarget = Mtarget if Mtarget is not None else pin.SE3(pin.utils.rotate('x', np.pi / 4),
                                                                    np.array([0.5, 0.1, 0.27]))  # x, y, z
-        self.frame_index = frame_index if frame_index is not None else robot.model.nframes-1
+        self.frame_index = frame_index if frame_index is not None else rmodel.nframes-1
         self.viz = viz
 
     def residual(self, q):
@@ -83,7 +83,7 @@ class CostPosture:
     def __init__(self, rmodel, rdata, qref=None, viz=None):
         # viz, rmodel and rdata are taken to respect the API but are not useful.
         self.qref = qref if qref is not None else pin.randomConfiguration(rmodel)
-        self.removeFreeFlyer = robot.model.joints[1].nq == 7  # Don't penalize the free flyer if any.
+        self.removeFreeFlyer = rmodel.joints[1].nq == 7  # Don't penalize the free flyer if any.
 
     def residual(self, q):
         if self.removeFreeFlyer:
@@ -96,7 +96,7 @@ class CostPosture:
 
     def calcDiff(self, q):
         if self.removeFreeFlyer:
-            g = np.zeros(robot.model.nv)
+            g = np.zeros(self.rmodel.nv)
             g[6:] = 2 * self.residual(q)
             return g
         else:
