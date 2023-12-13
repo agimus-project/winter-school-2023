@@ -3,24 +3,30 @@ import numpy.linalg as npla
 import matplotlib.pyplot as plt
 import unittest
 
+from utils.random_qp import generate_convex_eqp
+
 nx = 3
 nc = 1
 
-Q = np.eye(nx)
-q = np.ones(nx)*3
-b = np.ones(1)
-A = np.eye(nx)[:nc]
+qp = generate_convex_eqp(nx,nx,nc)
 
-K = np.block([ [Q, A.T], [A, np.zeros([nc,nc]) ]])
-k = np.concatenate([ -q, -b ])
+# Assemble the KKT matrix 
+K = np.block([ [qp.Q, qp.A.T], [qp.A, np.zeros([nc,nc]) ]])
+# Assemble the corresponding vector
+k = np.concatenate([ -qp.q, -qp.b ])
 
+# Solve the QP by inverting the QP
 primal_dual = npla.inv(K) @ k
+# Extact primal and dual optimal from the KKT inversion
 x_opt = primal_dual[:nx]
 mult_opt = primal_dual[nx:]
 
 ### TEST ZONE ############################################################
 ### This last part is to automatically validate the versions of this example.
 class LocalTest(unittest.TestCase):
+    '''
+    If you have QuadProg, check the KKT solution against it.
+    '''
     def test_logs(self): 
         try:
             from quadprog import solve_qp
