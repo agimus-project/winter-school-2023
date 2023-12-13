@@ -1,7 +1,6 @@
 import numpy as np
 from .random_qp import QP
 
-
 def load_crocoddyl_qp():
     '''
     This function returns a QP problem corresponding to one step
@@ -143,4 +142,43 @@ def gravityCompensingControls(model, data, q, v, actMatrix, constraint_models, c
     assert(nle.shape[0]==nv)
         
     return QP(M,J,nle,gamma)
+
+
+def load_tsid_qp():
+    '''
+    This function returns a QP problem corresponding to the simulation
+    of a closed-kinematic legged robot.
+    
+    '''
+
+    qp_doc = '''
+    This QP is a TSID-like problem.
+    The decision variables are x=[qddot, tau, f] (size 38+32+12=82).
+    The cost to minimize is:
+        sum(J qddot + gamma - PD) for tasks COM, posture and gripper
+    The constraints are 
+        M qddot + b = S' tau + Jc' f (size 38)
+        Jc qddot + gamma_c = 0 (size 12)
+    '''
+    
+    FILENAME = "data/qp_tsid.npy"
+    d=np.load(open(FILENAME, "rb"),allow_pickle=True).item()
+
+    na=38
+    nf=12
+    ntau=32
+    nx=na+nf+ntau
+    
+    Q,q,A,b = d['Q'],d['q'],d['A'],d['b']
+    
+    assert(na-ntau==6)
+    assert(np.all(A[-nf:,na:]==0))
+    assert(Q.shape==(nx,nx))
+    assert(q.shape[0]==nx)
+    assert(A.shape==(na+nf,nx))
+    assert(b.shape[0]==na+nf)
+    assert(np.all(Q[na:,:]==0))
+    assert(np.all(Q[:,na:]==0))
+   
+    return QP(Q,q,A,b)
 
