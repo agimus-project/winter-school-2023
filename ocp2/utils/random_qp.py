@@ -22,7 +22,7 @@ def gaussian_orthogonal_ensemble(n):
     return 0.5 * (A + A.T)
 
 
-def assemble_kkt_system(qp: QP):
+def __assemble_kkt_system(qp: QP):
     """Assemble a KKT system (left-hand side and right-hand side)."""
     Q = qp.Q
     q = qp.q
@@ -83,12 +83,12 @@ def generate_convex_qp_nolicq(n, p, nc, nredundant=1):
 class Test(unittest.TestCase):
     def test_strict_convex(self):
         qp = generate_convex_eqp(4, 5, 2, True)
-        kkt, _ = assemble_kkt_system(qp)
+        kkt, _ = __assemble_kkt_system(qp)
         d = npla.det(kkt)
 
     def test_nolicq(self):
         qp = generate_convex_qp_nolicq(4, 4, 3, 2)
-        kkt, _ = assemble_kkt_system(qp)
+        kkt, _ = __assemble_kkt_system(qp)
         print(kkt)
         d = npla.det(kkt)
         print("det:", d)
