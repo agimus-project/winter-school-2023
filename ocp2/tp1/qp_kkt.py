@@ -1,6 +1,5 @@
 import numpy as np
 import numpy.linalg as npla
-import matplotlib.pyplot as plt
 import unittest
 
 from utils.random_qp import generate_convex_eqp
@@ -21,6 +20,12 @@ primal_dual = npla.inv(K) @ k
 x_opt = primal_dual[:nx]
 mult_opt = primal_dual[nx:]
 
+
+from quadprog import solve_qp
+x,f,_,_,mult,_ = solve_qp(qp.Q,-qp.q,qp.A.T,-qp.b,nc)
+assert( np.allclose(x_opt,x) )
+assert( np.allclose(mult_opt,-mult) )
+
 ### TEST ZONE ############################################################
 ### This last part is to automatically validate the versions of this example.
 class LocalTest(unittest.TestCase):
@@ -30,7 +35,7 @@ class LocalTest(unittest.TestCase):
     def test_logs(self): 
         try:
             from quadprog import solve_qp
-            x,f,_,_,mult,_ = solve_qp(qp.Q,-qp.q,qp.A.T,-qp.b)
+            x,f,_,_,mult,_ = solve_qp(qp.Q,-qp.q,qp.A.T,-qp.b,nc)
             assert( np.allclose(x_opt,x) )
             assert( np.allclose(mult_opt,-mult) )
         except ModuleNotFoundError:
@@ -38,5 +43,4 @@ class LocalTest(unittest.TestCase):
 
 if __name__ == "__main__":
     LocalTest().test_logs()
-
 
