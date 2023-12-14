@@ -42,7 +42,7 @@ cd school/perception
 export HAPPYPOSE_DATA_DIR=/happypose_data
 # use "aws-w" if you are on ethernet instead of Eduroam !
 python -m happypose.toolbox.utils.download \
-    --mirror https://aws.saurel.me \
+    --mirror https://aws.saurel.me/ \
     --cosypose_models detector-bop-ycbv-pbr--970850 coarse-bop-ycbv-pbr--724183 refiner-bop-ycbv-pbr--604090 \
     --megapose_models \
     --ycbv_compat_models
