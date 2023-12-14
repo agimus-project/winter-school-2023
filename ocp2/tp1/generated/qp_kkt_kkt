@@ -1,0 +1,7 @@
+def solve_qp_inv_kkt(qp: QP):
+    """Routine to solve a QP from its KKT matrix.
+
+    Must return: primal solution, dual solution,
+    primal and dual residual.
+    """
+    ...

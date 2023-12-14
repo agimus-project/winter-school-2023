@@ -1,0 +1,16 @@
+def solve_qp_inv_kkt(qp: QP):
+    Q = qp.Q
+    q = qp.q
+    A = qp.A
+    b = qp.b
+    nx = Q.shape[0]
+    nc = b.shape[0]
+    mat = np.block([[Q, A.T], [A, np.zeros((nc, nc))]])
+    rhs = np.concatenate([q, b])
+
+    matinv = npla.inv(mat)
+    pd_opt = -matinv @ rhs
+    xopt, yopt = pd_opt[:nx], pd_opt[nx:]
+    derr = infNorm(Q @ xopt + q + A.T @ yopt)
+    perr = infNorm(A @ xopt + b)
+    return xopt, yopt, perr, derr

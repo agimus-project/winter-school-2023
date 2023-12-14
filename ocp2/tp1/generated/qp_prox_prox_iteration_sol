@@ -1,0 +1,20 @@
+def solve_qp_prox_one_iter(qp: QP, prev_l, mu: float = 0.01):
+    """Perform one iteration of the proximal algo.
+
+    This should return the same outputs as `solve_qp_inv_kkt`.
+    """
+    Q = qp.Q
+    q = qp.q
+    A = qp.A
+    b = qp.b + mu * prev_l
+    nx = Q.shape[0]
+    nc = b.shape[0]
+    mat = np.block([[Q, A.T], [A, -mu * np.eye(nc)]])
+    rhs = np.concatenate([q, b])
+
+    matinv = npla.inv(mat)
+    pd_opt = -matinv @ rhs
+    xopt, yopt = pd_opt[:nx], pd_opt[nx:]
+    derr = infNorm(Q @ xopt + qp.q + A.T @ yopt)
+    perr = infNorm(A @ xopt + qp.b)
+    return xopt, yopt, perr, derr

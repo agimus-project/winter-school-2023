@@ -1,0 +1,4 @@
+perr = infNorm(qp.A @ x_opt + qp.b)
+derr = infNorm(qp.Q @ x_opt + qp.q + qp.A.T @ mult_opt)
+print("Primal error:", perr)
+print("Dual   error:", derr)
