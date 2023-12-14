@@ -1,6 +1,6 @@
 # AGIMUS 2023 Winter School: Perception
 
-The perception course will cover two main areas: (i) object 6D pose estimation from images and (ii) object tracking from videos.
+The perception course will cover two main areas: (A) object 6D pose estimation from images and (B) object tracking from videos.
 The former is based on [HappyPose](https://github.com/agimus-project/happypose), our open source reimplementation of state-of-the-art object pose estimation methods called CosyPose and MegaPose.
 The latter is based on an object pose tracker called [M3t](https://github.com/DLR-RM/3DObjectTracking/) based on the work of M. Stoiber et al (DLR), for which we wrote a python wrapper [pym3t](https://github.com/MedericFourmy/pym3t).
 
@@ -26,21 +26,34 @@ The course is based on following publications:
 
 ## Installation
 
+The use of docker is highly recommended for this tutorial.  
 
-The use of docker is highly recommended for this tutorial (`pym3t` does not support macOS currently, PR welcomed).  
 
-- First create a HAPPYPOSE_DATA_FOLDER directory on your local machine to store the happypose models that we will download from within docker. 
-- Then, start the docker container and mount both this new directory (with absolute paths) and the winter school repo (**replace** uppercase names with your own paths).   
+For this tutorial, we will graphical interface (from opencv) to display results. Use either vnc or the `pal_docker.sh` by following the main repo README.
 
-TODO: advice pal script vs docker-vnc?
-
+- First create a HAPPYPOSE_DATA_FOLDER directory on your local machine to store the happypose models that we will download from within docker, e.g.:
 ```
 mkdir happypose_data
+```
 
+- Second, start the docker container and mount both this new directory (with absolute paths) and the winter school repo (**replace** uppercase names with your own paths).
+
+With `pal_docker.sh` solution:
+```
 pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-4
+```
+
+otherwise:
+
+```
+docker run --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-4
+```
+
+Activate the conda environment with happypose and pym3t installed.
+```
 /opt/miniconda3/bin/conda init && bash
 conda activate /aws2
-cd school/perception
+cd /school/perception
 ```
 
 ### Downloading HappyPose data
@@ -66,10 +79,11 @@ This folders should contains:
 - `cam_d435_640_pym3t.yaml`: camera intrinsics in m3t format
 - `obj_0000*.obj` files: mesh of object in recorded sequences (m3t requires wavefront)
 
+Setup is over!
 
-## Tutorial
+## A) Object pose detection (Happypose)
 
-The tutorial is split into several scripts. In all scripts there are places marked with `TODO` that you need to complete in order for script to work. Run all these exmaples from the `perception` folder.
+The tutorial is split into several scripts. In all scripts there are places marked with `TODO` that you need to complete in order for script to work. Run all these examples from the `perception` folder.
 
 ### Object Detection
 
@@ -93,10 +107,10 @@ Practical `03_megapose.py` shows how to use 6D pose estimator for objects unknow
 
 ![megapose](doc/megapose.png)
 
-### Object pose Tracking
+## B) Object pose Tracking
 Happypose provides an object detection and pose estimation algorithms. If we have an initial guess of the object pose, we could refine it with CosyPose or Megapose refiner. This local refinement is also the target of highly optimized algorithms able to run in real-time on CPU. We propose a case study through the `M3t` library using `pym3t` bindings.
 
-#### Object tracking on recorded sequences
+### Object tracking on recorded sequences
 This first example loads color (and optionally depth) images recorded with a realsense D435 camera and tracks a single object frame to frame.
 The tracker is given a mesh of the object to be tracked and an initial guess of the pose.
 
@@ -104,40 +118,38 @@ The tracker is given a mesh of the object to be tracked and an initial guess of 
 
 When running the tracker on a new object model, a set of template views are rendered, processed and stored in binary files (stored in tmp/ folder). This may take a while but is crucial to the efficiency of the online algorithm.
 
+If you encounter paths issues, change `data` by `data/aws_tracker_videos` in the following scripts.
+
 Run example script:
 `python 04_tracker_image_dir.py --use_region -b obj_000014 -m data -i data/scene1_obj_14 -c data/cam_d435_640_pym3t.yaml -s`
 
-A few experiments starting from here:
+A few experiments starting from there:
 - Depth modality: add `--use_depth` option, you should see a slighly faster convergence
 - Different scenes:
   - `scene1_obj_14` and `scene2_obj_14`: work with `-b obj_000014` object
-  - `scene3_obj_05` and `scene4_obj_05`: work with `-b obj_000005` object. Scene4 has bad initial guess, can you make it converge?
+  - `scene3_obj_05` and `scene4_obj_05`: work with `-b obj_000005` object. Scene4 has bad initial guess, will it converge despite that?
 - Tikhonov regularization: in this context, has a similar effect to a low-pass filter. Try to crank up or down `scale_t` and
 `scale_r` values in the script. You should observe a trade-off between tracking latency and stability.
 
-#### Object tracking from webcam stream
+### Object tracking from webcam stream
 We will now track the YCBV mug (obj_000014) using a webcam video stream. Start the script:
 
 `python 05_tracker_webcam.py --use_region -b obj_000014 -m data`
 
 Press `d` to initialize the object pose, align your cup with the silhouette rendered on the screen and press `x` to start tracking.
 
-You can again observe the effect of tikhonov regularization on tracking stability and latency.
 
 Possible experiments:
-- Same as `04_tracker_image_dir.py`, except for depth
+- You can again observe the effect of tikhonov regularization on tracking stability and latency.
+- If the object appears too small initially, decrease the hypothetic webcam field of view (e.g. `--fov 40`). 
 
-### Estimate and Track pipeline
+### Bonus 1
+Examine the simplified implementation of the tracking step in `ExecuteTrackingStepSingleObject`, `single_view_tracker.py`.
 
-`python 05_tracker_webcam.py --use_region -b obj_000014 -m data`
-
-You can now reproduce the experiments of the previous example (except for the depth input).
-
-#### Bonus
-Examine the simplified implementation of the tracking step in `ExecuteTrackingStepSingleObject`, `single_view_tracker.py`/
+### Bonus 2
+Based on `02_cosypose.py` and `04_tracker_image_dir.py`, assemble `06_detect_and_track_image_dir.py` to track an initial pose provided by CosyPose.
 
 ## Contact
-
 In case of any question do not hesitate to contact us:
 - Vladimir Petrik, vladimir.petrik@cvut.cz, https://petrikvladimir.github.io/
 - Mederic Fourmy, mederic.fourmy@cvut.cz
