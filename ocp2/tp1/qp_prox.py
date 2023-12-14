@@ -7,9 +7,14 @@ from utils.random_qp import generate_convex_eqp, generate_convex_qp_nolicq, QP, 
 
 
 def solve_qp_prox_one_iter(qp: QP, prev_l, mu: float = 0.01):
-    """Perform one iteration of the proximal algo.
+    """Template of the function that performs one iteration of the proximal algo.
 
-    This should return the same outputs as `solve_qp_inv_kkt`.
+    Must return:
+    - primal solution
+    - dual solution,
+    - primal residual (scalar)
+    - dual residual.
+    Note: This is the same outputs as `solve_qp_inv_kkt`.
     """
     ...
 
@@ -21,7 +26,8 @@ def solve_qp_prox_one_iter(qp: QP, prev_l, mu: float = 0.01):
 def solve_qp_prox_one_iter(qp: QP, prev_l, mu: float = 0.01):
     """Perform one iteration of the proximal algo.
 
-    This should return the same outputs as `solve_qp_inv_kkt`.
+    This should return the same outputs as `solve_qp_inv_kkt`,
+    ie primal solution, dual solution, primal and dual residual.
     """
     Q = qp.Q
     q = qp.q

@@ -146,8 +146,9 @@ def gravityCompensingControls(model, data, q, v, actMatrix, constraint_models, c
 
 def load_tsid_qp():
     '''
-    This function returns a QP problem corresponding to the simulation
-    of a closed-kinematic legged robot.
+    This function returns a QP problem corresponding to the inverse
+    dynamics in task-space (TSID) of a legged robot in contact
+    with the ground.
     
     '''
 
