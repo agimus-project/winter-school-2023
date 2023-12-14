@@ -9,8 +9,8 @@ The course is based on following publications:
 - Fourmy, M., Priban, V., Behrens, J. K., Mansard, N., Sivic, J., & Petrik, V. (2023). **Visually Guided Model Predictive Robot Control via 6D Object Pose Localization and Tracking**. In review for ICRA 2023. [ArXiv](https://arxiv.org/pdf/2311.05344), [project page](https://data.ciirc.cvut.cz/public/projects/2023VisualMPC/).
 - Labbé, Y., Manuelli, L., Mousavian, A., Tyree, S., Birchfield, S., Tremblay, J., Carpentier, J., Aubry, M., Fox, D. and Sivic, J., (2022). **Megapose: 6d pose estimation of novel objects via render & compare**. [ArXiv](https://arxiv.org/abs/2212.06870), [project page](https://megapose6d.github.io/).
 - Labbé, Y., Carpentier, J., Aubry, M., & Sivic, J. (2020). **Cosypose: Consistent multi-view multi-object 6d pose estimation**. In ECCV 2020. [ArXiv](https://arxiv.org/abs/2008.08465), [project page](https://www.di.ens.fr/willow/research/cosypose/).
-- Stoiber, M., Pfanne, M., Strobl, K. H., Triebel, R., & Albu-Schäffer, A. (2022). SRT3D: A sparse region-based 3D object tracking approach for the real world. International Journal of Computer Vision, 130(4), 1008-1030. [ArXiv](https://arxiv.org/abs/2110.12715)
-- Stoiber, M., Sundermeyer, M., & Triebel, R. (2022). Iterative corresponding geometry: Fusing region and depth for highly efficient 3d tracking of textureless objects. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (pp. 6855-6865). [ArXiv](https://arxiv.org/abs/2203.05334)
+- Stoiber, M., Pfanne, M., Strobl, K. H., Triebel, R., & Albu-Schäffer, A. (2022). **SRT3D: A sparse region-based 3D object tracking approach for the real world**. International Journal of Computer Vision, 130(4), 1008-1030. [ArXiv](https://arxiv.org/abs/2110.12715)
+- Stoiber, M., Sundermeyer, M., & Triebel, R. (2022). **Iterative corresponding geometry: Fusing region and depth for highly efficient 3d tracking of textureless objects**. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (pp. 6855-6865). [ArXiv](https://arxiv.org/abs/2203.05334)
 
 ## Outline
 
