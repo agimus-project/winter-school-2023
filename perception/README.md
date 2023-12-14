@@ -56,8 +56,8 @@ python -m happypose.toolbox.utils.download \
 
 ### Downloading image sequences
 Download, unzip, and move to your `winter-school-2023/perception/data` folder:
-- On Ethernet: <https://aws.saurel.me/aws_tracker_videos.zip>
-- On Eduroam: <https://aws-w.saurel.me/aws_tracker_videos.zip>
+- On Ethernet: <https://aws-w.saurel.me/aws_tracker_videos.zip>
+- On Eduroam: <https://aws.saurel.me/aws_tracker_videos.zip>
 - In case of trouble: [this link](https://drive.google.com/file/d/1U_M_3kl9UNfTGxRaG7rRlok3fkut_jDA/view?usp=sharing)
 
 This folders should contains:
