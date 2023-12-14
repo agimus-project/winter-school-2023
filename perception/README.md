@@ -28,9 +28,10 @@ The course is based on following publications:
 
 It is recommended to use docker, to activate the shell, run (replace variables in capital with your paths):
 ```
-pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v $PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-3
+pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-4
 /opt/miniconda3/bin/conda init && bash
 conda activate /aws2
+cd school/perception
 ```
 
 ### Downloading HappyPose data
@@ -38,11 +39,7 @@ conda activate /aws2
 Object pose estimators are based on pre-trained networks and the dataset of objects.
 To be able to create/run the tutorial code you need to download both with:
 ```
-cd school/perception
-export HAPPYPOSE_DATA_DIR=/happypose_data
-# use "aws-w" if you are on ethernet instead of Eduroam !
 python -m happypose.toolbox.utils.download \
-    --mirror https://aws.saurel.me/ \
     --cosypose_models detector-bop-ycbv-pbr--970850 coarse-bop-ycbv-pbr--724183 refiner-bop-ycbv-pbr--604090 \
     --megapose_models \
     --ycbv_compat_models
