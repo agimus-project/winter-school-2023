@@ -4,10 +4,18 @@ import unittest
 
 from utils.random_qp import generate_convex_eqp, generate_convex_qp_nolicq, infNorm, QP
 
+# ### Simple example
+# We start with a simple example of resolution of a random QP with
+# 3 variables and 1 constraints, by inverting the linear KKT system.
+
 # %jupyter_snippet get_a_qp
 nx = 3
 nc = 1
 
+# qp is a named-tuple containing 4 numpy arrays:
+# Q the cost hessian, q the cost gradient, A the constraint jacobian
+# and b the constraint value at 0. The QP program to solve then writes
+# min_x .5 x'Qx + q'x   s.t. Ax+b = 0
 qp = generate_convex_eqp(nx, nx, nc)
 # %end_jupyter_snippet
 
@@ -25,6 +33,9 @@ mult_opt = primal_dual[nx:]
 # %end_jupyter_snippet
 
 # %jupyter_snippet pd_err
+# Compute the primal and dual errors.
+# The primal error is dL/dmult = Ax+b
+# The dual error is dL/dx = Qx + A'l + q
 perr = infNorm(qp.A @ x_opt + qp.b)
 derr = infNorm(qp.Q @ x_opt + qp.q + qp.A.T @ mult_opt)
 print("Primal error:", perr)
@@ -33,19 +44,26 @@ print("Dual   error:", derr)
 
 # %jupyter_snippet kkt
 
+def solve_qp_inv_kkt(qp: QP):
+    """Template of a routine to solve a QP from its KKT matrix.
 
+    Must return: 
+    - primal solution
+    - dual solution,
+    - primal residual (scalar)
+    - dual residual.
+    """
+    ...
+
+# %end_jupyter_snippet
+
+# %jupyter_snippet kkt_solution
 def solve_qp_inv_kkt(qp: QP):
     """Routine to solve a QP from its KKT matrix.
 
     Must return: primal solution, dual solution,
     primal and dual residual.
     """
-    ...
-
-
-# %end_jupyter_snippet
-# %jupyter_snippet kkt_solution
-def solve_qp_inv_kkt(qp: QP):
     Q = qp.Q
     q = qp.q
     A = qp.A
@@ -61,7 +79,6 @@ def solve_qp_inv_kkt(qp: QP):
     derr = infNorm(Q @ xopt + q + A.T @ yopt)
     perr = infNorm(A @ xopt + b)
     return xopt, yopt, perr, derr
-
 
 # %end_jupyter_snippet
 
@@ -91,13 +108,6 @@ for qp in [
         print("Got an exception: {}".format(e))
 
 # %end_jupyter_snippet
-
-
-from quadprog import solve_qp
-
-x, f, _, _, mult, _ = solve_qp(qp.Q, -qp.q, qp.A.T, -qp.b, nc)
-assert np.allclose(x_opt, x)
-assert np.allclose(mult_opt, -mult)
 
 
 ### TEST ZONE ############################################################
