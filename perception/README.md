@@ -28,7 +28,7 @@ The course is based on following publications:
 
 It is recommended to use docker, to activate the shell, run (replace variables in capital with your paths):
 ```
-pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v $PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-2
+pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v $PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-3
 /opt/miniconda3/bin/conda init && bash
 conda activate /aws2
 ```
@@ -40,9 +40,12 @@ To be able to create/run the tutorial code you need to download both with:
 ```
 cd school/perception
 export HAPPYPOSE_DATA_DIR=/happypose_data
-python -m happypose.toolbox.utils.download --cosypose_models detector-bop-ycbv-pbr--970850  coarse-bop-ycbv-pbr--724183 refiner-bop-ycbv-pbr--604090
-python -m happypose.toolbox.utils.download --megapose_models
-python -m happypose.toolbox.utils.download --ycbv_compat_models
+# use "aws-w" if you are on ethernet instead of Eduroam !
+python -m happypose.toolbox.utils.download \
+    --mirror https://aws.saurel.me \
+    --cosypose_models detector-bop-ycbv-pbr--970850 coarse-bop-ycbv-pbr--724183 refiner-bop-ycbv-pbr--604090 \
+    --megapose_models \
+    --ycbv_compat_models
 ```
 
 ## Tutorial
@@ -72,12 +75,13 @@ Practical `03_megapose.py` shows how to use 6D pose estimator for objects unknow
 
 ### Object pose Tracking
 We will now investigate an efficient object pose tracking algorithm, based on the work of Manuel Stoiber.
-We wrote [pym3t](https://github.com/MedericFourmy/pym3t), a python wrapper for ease of experimentation around DLR. The  follow installation instructions at .  
+We wrote [pym3t](https://github.com/MedericFourmy/pym3t), a python wrapper for ease of experimentation around DLR. The  follow installation instructions at .
 :warning: at the time we are writing this tutorial, macOS installation is not supported -> use docker.
 
 ### Downloading the tutorial data
 TODO: update download link
-Download and unzip pre-recorded image sequences from [this link](https://drive.google.com/file/d/1U_M_3kl9UNfTGxRaG7rRlok3fkut_jDA/view?usp=sharing). These sequences were recorded with a RealSense D435, whose intrinsics parameters are provided.
+Download and unzip pre-recorded image sequences from <https://aws.saurel.me/aws_tracker_videos.zip> /
+<https://aws-w.saurel.me/aws_tracker_videos.zip> or [this link](https://drive.google.com/file/d/1U_M_3kl9UNfTGxRaG7rRlok3fkut_jDA/view?usp=sharing). These sequences were recorded with a RealSense D435, whose intrinsics parameters are provided.
 This folders should contains:
 - `scene*` folders: contains sequences of `color*.png` and `depth*.png` images
 - `cam_d435_640.yaml`: camera intrinsics
@@ -91,13 +95,13 @@ The tracker is given a mesh of the object to be tracked and an initial guess of 
 
 When running the tracker on a new object model, a set of template views are rendered, processed and stored in binary files (stored in tmp/ folder). This may take a while but is crucial to the efficiency of the online algorithm.
 
-Run example script:  
+Run example script:
 `python 04_tracker_image_dir.py --use_region -b obj_000014 -m data -i data/scene1_obj_14 -c data/cam_d435_640_pym3t.yaml -s`
 
 A few experiments starting from here:
 - Depth modality: add `--use_depth` option, you should see a slighly faster convergence
-- Different scenes: 
-  - `scene1_obj_14` and `scene2_obj_14`: work with `-b obj_000014` object 
+- Different scenes:
+  - `scene1_obj_14` and `scene2_obj_14`: work with `-b obj_000014` object
   - `scene3_obj_05` and `scene4_obj_05`: work with `-b obj_000005` object. Scene4 has bad initial guess, can you make it converge?
 - Tikhonov regularization: in this context, has a similar effect to a low-pass filter. Try to crank up or down `scale_t` and
 `scale_r` values in the script. You should observe a trade-off between tracking latency and stability.
@@ -105,24 +109,24 @@ A few experiments starting from here:
 #### Object tracking from webcam stream
 We will now track the YCBV mug (obj_000014) using a webcam video stream. Start the script:
 
-`python 05_tracker_webcam.py --use_region -b obj_000014 -m data`  
+`python 05_tracker_webcam.py --use_region -b obj_000014 -m data`
 
-Press `d` to initialize the object pose, align your cup with the silhouette rendered on the screen and press `x` to start tracking.  
+Press `d` to initialize the object pose, align your cup with the silhouette rendered on the screen and press `x` to start tracking.
 
-You can again observe the effect of tikhonov regularization on tracking stability and latency. 
+You can again observe the effect of tikhonov regularization on tracking stability and latency.
 
 Possible experiments:
 - Same as `04_tracker_image_dir.py`, except for depth
 
 ### Estimate and Track pipeline
 
-`python 05_tracker_webcam.py --use_region -b obj_000014 -m data`  
+`python 05_tracker_webcam.py --use_region -b obj_000014 -m data`
 
 You can now reproduce the experiments of the previous example (except for the depth input).
 
 #### Bonus
 Examine the simplified implementation of the tracking step in `ExecuteTrackingStepSingleObject`, `single_view_tracker.py`/
- 
+
 ## Contact
 
 In case of any question do not hesitate to contact us:
