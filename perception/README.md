@@ -74,8 +74,9 @@ The tutorial is split into several scripts. In all scripts there are places mark
 ### Object Detection
 
 The first practical `01_object_detection.py` will show you how to use object detector on the image.
-The detector for YCBV object is loaded and your goal is to filter the detections based on the object ID.
-You should see predictions like this:
+Your goal is to filter the detections based on the object ID, once the detector for YCBV object is loaded.
+You can refer to this [image](doc/ycbv_objects.png) for the object ID.
+You should see non-filtered predictions like this:
 
 ![detection](doc/detections.png)
 

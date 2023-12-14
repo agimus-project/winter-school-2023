@@ -36,7 +36,8 @@ if __name__ == "__main__":
     output_image = image.copy()
     # Draw all detection bounding boxes
     for bb, confidence in zip(detections.bboxes, detections.infos["score"]):
-        # todo: filter the detections based on the object id, i.e. use prior information
+        # TODO: filter the detections based on the object label ("label" key in detections.infos)
+        # label is formed as 'ycbv-obj_0000xx' where xx changes from object to object
         xmin, ymin, xmax, ymax = [int(v) for v in bb]
         cv2.rectangle(
             output_image, [xmin, ymin], [xmax, ymax], color=[255, 0, 0], thickness=2
