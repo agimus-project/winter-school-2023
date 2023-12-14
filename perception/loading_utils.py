@@ -19,10 +19,15 @@ def get_perception_data_dir(data_dir: Path | None = None) -> Path:
     if data_dir is None:
         data_dir = Path(__file__).parent / "data"
     path_camera = data_dir / "cam_d435_640_happypose.json"
-    scene1_dir = data_dir / "scene1_obj_14"
+    scene1_dir = data_dir /"scene1_obj_14"
+    # Handle the case where aws_tracker_videos fodler was copied whole into data
+    if not path_camera.exists():
+        data_dir = data_dir / "aws_tracker_videos"
+        path_camera = data_dir / "cam_d435_640_happypose.json"
+        scene1_dir = data_dir / "scene1_obj_14"
     assert (
         path_camera.exists() and scene1_dir.exists()
-    ), "You need to download the data first. See README.md"
+    ), f"{path_camera.as_posix()} and {scene1_dir.as_posix()} not found. See README.md for data download."
     return data_dir
 
 

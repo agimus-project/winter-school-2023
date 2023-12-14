@@ -2,7 +2,7 @@
 
 The perception course will cover two main areas: (i) object 6D pose estimation from images and (ii) object tracking from videos.
 The former is based on [HappyPose](https://github.com/agimus-project/happypose), our open source reimplementation of state-of-the-art object pose estimation methods called CosyPose and MegaPose.
-The latter is based on DLR Tracker based on the work of Stoiber et al.
+The latter is based on an object pose tracker called [M3t](https://github.com/DLR-RM/3DObjectTracking/) based on the work of M. Stoiber et al (DLR), for which we wrote a python wrapper [pym3t](https://github.com/MedericFourmy/pym3t).
 
 The course is based on following publications:
 
@@ -26,8 +26,17 @@ The course is based on following publications:
 
 ## Installation
 
-It is recommended to use docker, to activate the shell, run (replace variables in capital with your paths):
+
+The use of docker is highly recommended for this tutorial (`pym3t` does not support macOS currently, PR welcomed).  
+
+- First create a HAPPYPOSE_DATA_FOLDER directory on your local machine to store the happypose models that we will download from within docker. 
+- Then, start the docker container and mount both this new directory (with absolute paths) and the winter school repo (**replace** uppercase names with your own paths).   
+
+TODO: advice pal script vs docker-vnc?
+
 ```
+mkdir happypose_data
+
 pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-4
 /opt/miniconda3/bin/conda init && bash
 conda activate /aws2
@@ -37,7 +46,7 @@ cd school/perception
 ### Downloading HappyPose data
 
 Object pose estimators are based on pre-trained networks and the dataset of objects.
-To be able to create/run the tutorial code you need to download both with:
+To be able to create/run the tutorial code you need to download both (within your docker terminal) with:
 ```
 python -m happypose.toolbox.utils.download \
     --cosypose_models detector-bop-ycbv-pbr--970850 coarse-bop-ycbv-pbr--724183 refiner-bop-ycbv-pbr--604090 \
@@ -45,9 +54,22 @@ python -m happypose.toolbox.utils.download \
     --ycbv_compat_models
 ```
 
+### Downloading image sequences
+Download, unzip, and move to your `winter-school-2023/perception/data` folder:
+- On Ethernet: <https://aws.saurel.me/aws_tracker_videos.zip>
+- On Eduroam: <https://aws-w.saurel.me/aws_tracker_videos.zip>
+- In case of trouble: [this link](https://drive.google.com/file/d/1U_M_3kl9UNfTGxRaG7rRlok3fkut_jDA/view?usp=sharing)
+
+This folders should contains:
+- `scene*` folders: contains sequences of `color*.png` and `depth*.png` images
+- `cam_d435_640_happypose.yaml`: camera intrinsics in CosyPose/Megapose format
+- `cam_d435_640_pym3t.yaml`: camera intrinsics in m3t format
+- `obj_0000*.obj` files: mesh of object in recorded sequences (m3t requires wavefront)
+
+
 ## Tutorial
 
-The tutorial is split into several scripts. In all scripts there are places marked with `TODO` that you need to complete in order for script to work.
+The tutorial is split into several scripts. In all scripts there are places marked with `TODO` that you need to complete in order for script to work. Run all these exmaples from the `perception` folder.
 
 ### Object Detection
 
@@ -71,18 +93,7 @@ Practical `03_megapose.py` shows how to use 6D pose estimator for objects unknow
 ![megapose](doc/megapose.png)
 
 ### Object pose Tracking
-We will now investigate an efficient object pose tracking algorithm, based on the work of Manuel Stoiber.
-We wrote [pym3t](https://github.com/MedericFourmy/pym3t), a python wrapper for ease of experimentation around DLR. The  follow installation instructions at .
-:warning: at the time we are writing this tutorial, macOS installation is not supported -> use docker.
-
-### Downloading the tutorial data
-TODO: update download link
-Download and unzip pre-recorded image sequences from <https://aws.saurel.me/aws_tracker_videos.zip> /
-<https://aws-w.saurel.me/aws_tracker_videos.zip> or [this link](https://drive.google.com/file/d/1U_M_3kl9UNfTGxRaG7rRlok3fkut_jDA/view?usp=sharing). These sequences were recorded with a RealSense D435, whose intrinsics parameters are provided.
-This folders should contains:
-- `scene*` folders: contains sequences of `color*.png` and `depth*.png` images
-- `cam_d435_640.yaml`: camera intrinsics
-- `obj_0000*.obj` files: mesh of object in recorded sequences
+Happypose provides an object detection and pose estimation algorithms. If we have an initial guess of the object pose, we could refine it with CosyPose or Megapose refiner. This local refinement is also the target of highly optimized algorithms able to run in real-time on CPU. We propose a case study through the `M3t` library using `pym3t` bindings.
 
 #### Object tracking on recorded sequences
 This first example loads color (and optionally depth) images recorded with a realsense D435 camera and tracks a single object frame to frame.
