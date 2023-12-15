@@ -26,7 +26,7 @@ The course is based on following publications:
 
 ## Installation
 
-The use of docker is highly recommended for this tutorial.  
+The use of docker is highly recommended for this tutorial.
 
 
 For this tutorial, we will graphical interface (from opencv) to display results. Use either vnc or the `pal_docker.sh` by following the main repo README.
@@ -40,13 +40,13 @@ mkdir happypose_data
 
 With `pal_docker.sh` solution:
 ```
-pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-4
+pal_docker.sh --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -p 6080:6080 -it reg.saurel.me/aws-4
 ```
 
 otherwise:
 
 ```
-docker run --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -it reg.saurel.me/aws-4
+docker run --rm --device=/dev/video0:/dev/video0 -v ABS_PATH_TO_YOUR_HAPPYPOSE_DATA_FOLDER:/happypose_data -v PATH_TO_YOUR_REPO:/school -p 6080:6080 -it reg.saurel.me/aws-4
 ```
 
 Activate the conda environment with happypose and pym3t installed.
@@ -141,7 +141,7 @@ Press `d` to initialize the object pose, align your cup with the silhouette rend
 
 Possible experiments:
 - You can again observe the effect of tikhonov regularization on tracking stability and latency.
-- If the object appears too small initially, decrease the hypothetic webcam field of view (e.g. `--fov 40`). 
+- If the object appears too small initially, decrease the hypothetic webcam field of view (e.g. `--fov 40`).
 
 ### Bonus 1
 Examine the simplified implementation of the tracking step in `ExecuteTrackingStepSingleObject`, `single_view_tracker.py`.
