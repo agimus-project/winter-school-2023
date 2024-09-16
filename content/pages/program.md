@@ -131,10 +131,10 @@ For Agimus PIs coming only to the Tuesday-Wednesday meeting, your registration c
 ## Supported by ...
 
 
-![Scenario 1: Across columns](/eurobin_small.png)
+![Scenario 1: Across columns](/winter-school-2023/eurobin_small.png)
 
-![Scenario 1: Across columns](/agimus_small.png)
+![Scenario 1: Across columns](/winter-school-2023/agimus_small.png)
 
-![Scenario 1: Across columns](/laas_dpt.png)
+![Scenario 1: Across columns](/winter-school-2023/laas_dpt.png)
 
-![Scenario 1: Across columns](/eu_320.png)
+![Scenario 1: Across columns](/winter-school-2023/eu_320.png)

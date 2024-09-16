@@ -13,126 +13,126 @@ To run the practicals, you can either use [docker](https://github.com/agimus-pro
 
 ## Talks and Practicals
 
-### Rigid body dynamic models and algorithms 
+### Rigid body dynamic models and algorithms
 
-Justin Carpentier 
+Justin Carpentier
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_2_sim1.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_2_sim1.pdf)
 
 - [practicals](https://github.com/agimus-project/winter-school-2023/tree/main/simulation/sim1_rigid_body)
 
-### The Configuration Space of a Deformable Object 
+### The Configuration Space of a Deformable Object
 
-Timothy Bretl 
+Timothy Bretl
 
 - [video](https://peertube.laas.fr/w/7evMD8MPqacSjScoYu8M42)
 
-### Optimal Control & Trajectory Optimization 
+### Optimal Control & Trajectory Optimization
 
-Nicolas Mansard 
+Nicolas Mansard
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_4_ocp1.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_4_ocp1.pdf)
 
-- [video](https://peertube.laas.fr/w/i8cukr22Q83YaUm7eQUSxq) 
+- [video](https://peertube.laas.fr/w/i8cukr22Q83YaUm7eQUSxq)
 
 - [practicals](https://github.com/agimus-project/winter-school-2023/tree/main/ocp1)
 
-### Task and Motion Planning 
+### Task and Motion Planning
 
-Florent Lamiraux 
+Florent Lamiraux
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_5_tamp.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_5_tamp.pdf)
 
-- [video](https://peertube.laas.fr/w/g3yX2SVDooWGhYvpUisNFt) 
+- [video](https://peertube.laas.fr/w/g3yX2SVDooWGhYvpUisNFt)
 
 - [practicals](https://github.com/humanoid-path-planner/hpp-practicals/tree/master)
 
-### ROS2 
+### ROS2
 
-Pal Robotics 
+Pal Robotics
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_6_ros2.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_6_ros2.pdf)
 
-- [video](https://peertube.laas.fr/w/aycsiQWBk1oifJrze3uZzz) 
+- [video](https://peertube.laas.fr/w/aycsiQWBk1oifJrze3uZzz)
 
 - [practicals](https://gepettoweb.laas.fr/talks/aws2023/ROS2_practicals/)
 
-### Optimization and Learning for Reactive Robotic Behaviors 
+### Optimization and Learning for Reactive Robotic Behaviors
 
-Ludovic Righetti 
+Ludovic Righetti
 
 - [video](https://peertube.laas.fr/w/uh5XLPeLoyNfKJo1hUnVa1)
 
-### Optimization Algorithms 
+### Optimization Algorithms
 
-Adrien Taylor 
+Adrien Taylor
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_8_keynote_Adrien_Taylor.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_8_keynote_Adrien_Taylor.pdf)
 
 - [video](https://peertube.laas.fr/w/tgX3s6QsbUNsL3DaYpMsdw)
 
-### Collision Detection 
+### Collision Detection
 
-Louis Montaut 
+Louis Montaut
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_9_sim2.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_9_sim2.pdf)
 
-- [video](https://peertube.laas.fr/w/cqw21UQZBV6ydJLYC8Twpn) 
+- [video](https://peertube.laas.fr/w/cqw21UQZBV6ydJLYC8Twpn)
 
 - [practicals](https://github.com/agimus-project/winter-school-2023/tree/main/simulation/sim2_collision)
 
-### Constrained Optimization 
+### Constrained Optimization
 
-Wilson Jallet 
+Wilson Jallet
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_10_ocp2-part1__proxqp.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_10_ocp2-part1__proxqp.pdf)
 
-- [video](https://peertube.laas.fr/w/1PbYuUeYWseMjC6j36EWSE) 
+- [video](https://peertube.laas.fr/w/1PbYuUeYWseMjC6j36EWSE)
 
 - [practicals](https://github.com/agimus-project/winter-school-2023/tree/main/ocp2)
 
-### Constrained Trajectory Optimization 
+### Constrained Trajectory Optimization
 
-Wilson Jallet 
+Wilson Jallet
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_11_ocp2-part2__proxddp.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_11_ocp2-part2__proxddp.pdf)
 
 - [video](https://peertube.laas.fr/w/76ffnp9ggpGoB1u2sgJozj)
 
-### Perception 
+### Perception
 
-Vladimír Petrík & Mederic Fourmy 
+Vladimír Petrík & Mederic Fourmy
 
 - [slides part 1](https://gepettoweb.laas.fr/talks/aws2023/aws_12_perception-part1__pose_estimation.pdf) [slides part 2](https://gepettoweb.laas.fr/talks/aws2023/aws_13_perception-part2__tracking.pdf)
 
-- [video](https://peertube.laas.fr/w/kZwmMC8Pht72iadnrfCtMf) 
+- [video](https://peertube.laas.fr/w/kZwmMC8Pht72iadnrfCtMf)
 
 - [practicals](https://github.com/agimus-project/winter-school-2023/tree/main/perception)
 
-### Robotics Under Planetary Constraints 
+### Robotics Under Planetary Constraints
 
-Adrien Escande 
+Adrien Escande
 
-- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_14_keynote_Adrien_Escande.pdf) 
+- [slides](https://gepettoweb.laas.fr/talks/aws2023/aws_14_keynote_Adrien_Escande.pdf)
 
 - [video](https://peertube.laas.fr/w/1ojboUyttZbQyWnf5UoVNS)
 
-### Contact Dynamics 
+### Contact Dynamics
 
-Justin Carpentier & Quentin Le Lidec 
+Justin Carpentier & Quentin Le Lidec
 
 - [slides part 1](https://gepettoweb.laas.fr/talks/aws2023/aws_15_sim3-part1.pdf) [slides part 2](https://gepettoweb.laas.fr/talks/aws2023/aws_16_sim3-part2.pdf)
 
-- [video](https://peertube.laas.fr/w/rsLA7kymGpCV13jBSLh1E3) 
+- [video](https://peertube.laas.fr/w/rsLA7kymGpCV13jBSLh1E3)
 
 - [practicals](https://github.com/agimus-project/winter-school-2023/tree/main/simulation/sim3_contact_dynamics)
 
 ## Supported by ...
 
-![Scenario 1: Across columns](/eurobin_small.png)
+![Scenario 1: Across columns](/winter-school-2023/eurobin_small.png)
 
-![Scenario 1: Across columns](/agimus_small.png)
+![Scenario 1: Across columns](/winter-school-2023/agimus_small.png)
 
-![Scenario 1: Across columns](/laas_dpt.png)
+![Scenario 1: Across columns](/winter-school-2023/laas_dpt.png)
 
-![Scenario 1: Across columns](/eu_320.png)
+![Scenario 1: Across columns](/winter-school-2023/eu_320.png)
