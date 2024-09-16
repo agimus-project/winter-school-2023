@@ -1,4 +1,4 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://agimus-project.github.io/winter-school-2023/'
 languageCode = 'en-us'
 title = 'Agimus Winter School Materials'
 theme = 'hugo-book'
